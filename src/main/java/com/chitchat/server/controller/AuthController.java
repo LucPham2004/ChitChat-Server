@@ -98,8 +98,9 @@ public class AuthController {
         ResponseCookie resCookie = ResponseCookie.from("refresh_token", refresh_token)
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("None")
                 .path("/")
-                .maxAge(securityUtils.refreshTokenExpiration)
+                .maxAge(securityUtils.refreshTokenExpiration * 86400)
                 .build();
 
         // Create the ApiResponse
@@ -132,14 +133,12 @@ public class AuthController {
 				.map(Optional::get)
 				.collect(Collectors.toSet());
 
-        if (currentUserDB != null) {
-            userLogin.setId(currentUserDB.getId());
-            userLogin.setEmail(currentUserDB.getEmail());
-            userLogin.setUsername(currentUserDB.getUsername());
-            userLogin.setAuthorities(authorities);
+        userLogin.setId(currentUserDB.getId());
+        userLogin.setEmail(currentUserDB.getEmail());
+        userLogin.setUsername(currentUserDB.getUsername());
+        userLogin.setAuthorities(authorities);
 
-            userGetAccount.setUser(userLogin);
-        }
+        userGetAccount.setUser(userLogin);
 
         return ApiResponse.<LoginResponse.UserGetAccount>builder()
                 .code(1000)
@@ -193,8 +192,9 @@ public class AuthController {
                 .from("refresh_token", new_refresh_token)
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("None")
                 .path("/")
-                .maxAge(securityUtils.refreshTokenExpiration)
+                .maxAge(securityUtils.refreshTokenExpiration * 86400)
                 .build();
 
         ApiResponse<LoginResponse> apiResponse = new ApiResponse<>();
@@ -214,7 +214,7 @@ public class AuthController {
                 ? SecurityUtils.getCurrentUserLogin().get()
                 : "";
 
-        if (emailUsernamePhone.equals("")) {
+        if (emailUsernamePhone.isEmpty()) {
             throw new AppException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
@@ -227,9 +227,10 @@ public class AuthController {
 
         // remove fresh token from cookie`
         ResponseCookie deleteSpringCookie = ResponseCookie
-                .from("refresh_token", null)
+                .from("refresh_token", "")
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();

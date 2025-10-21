@@ -33,6 +33,7 @@ public class MessageServiceImpl implements MessageService {
     MessageRepository messageRepository;
     MessageMapper messageMapper;
     ConversationRepository conversationRepository;
+    ConversationServiceImpl conversationService;
     UserServiceImpl userService;
     MediaRepository mediaRepository;
     SimpMessagingTemplate template;
@@ -85,20 +86,67 @@ public class MessageServiceImpl implements MessageService {
         Message message = messageMapper.toMessage(chatRequest);
         messageRepository.save(message);
 
+        chatRequest.setId(message.getId());
+
+        for(Long participantId: conversation.getParticipantIds()) {
+            template.convertAndSend("/topic/user/" + participantId, chatRequest);
+        }
+
+        handleMessageMedia(chatRequest, message, conversation);
+    }
+
+    // Handle call requests
+    public void handleCallRequest(ChatRequest request) {
+        // Save call request as a special message type
+        Conversation conversation = conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+
+        Message callMessage = Message.builder()
+                .conversation(conversation)
+                .senderId(request.getSenderId())
+                .content("📞 " + (request.getCallType().equals("video") ? "Video" : "Audio") + " call")
+                .messageType("CALL_REQUEST")
+                .build();
+
+        messageRepository.save(callMessage);
+        request.setId(callMessage.getId());
+
+        // Send to all participants
+        for (Long participantId : conversation.getParticipantIds()) {
+            template.convertAndSend("/topic/user/" + participantId, request);
+        }
+    }
+
+    // Handle typing status
+    public void handleTypingStatus(ChatRequest request) {
+        // Don't save typing status to database, just broadcast
+        Conversation conversation = conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+
+        // Send to other participants (not sender)
+        for (Long participantId : conversation.getParticipantIds()) {
+            if (!participantId.equals(request.getSenderId())) {
+                template.convertAndSend("/topic/user/" + participantId, request);
+            }
+        }
+    }
+
+    private void handleMessageMedia(ChatRequest chatRequest, Message message, Conversation conversation) {
+        // Your existing media handling code
         if (chatRequest.getPublicIds() != null && chatRequest.getUrls() != null &&
-            chatRequest.getHeights() != null && chatRequest.getWidths() != null &&
-            chatRequest.getResourceTypes() != null && chatRequest.getFileNames() != null) {
+                chatRequest.getHeights() != null && chatRequest.getWidths() != null &&
+                chatRequest.getResourceTypes() != null && chatRequest.getFileNames() != null) {
 
             if (chatRequest.getPublicIds().length != chatRequest.getUrls().length
-                || chatRequest.getPublicIds().length != chatRequest.getFileNames().length
-                || chatRequest.getPublicIds().length != chatRequest.getHeights().length
-                || chatRequest.getPublicIds().length != chatRequest.getWidths().length
-                || chatRequest.getPublicIds().length != chatRequest.getResourceTypes().length) {
+                    || chatRequest.getPublicIds().length != chatRequest.getFileNames().length
+                    || chatRequest.getPublicIds().length != chatRequest.getHeights().length
+                    || chatRequest.getPublicIds().length != chatRequest.getWidths().length
+                    || chatRequest.getPublicIds().length != chatRequest.getResourceTypes().length) {
                 throw new IllegalArgumentException("The size of publicIds and urls/heights/widths/types must be the same.");
             }
-        
+
             Set<Media> medias = new HashSet<>();
-        
+
             for (int i = 0; i < chatRequest.getPublicIds().length; i++) {
                 Media media = new Media();
                 media.setPublicId(chatRequest.getPublicIds()[i]);
@@ -107,22 +155,18 @@ public class MessageServiceImpl implements MessageService {
                 media.setHeight(chatRequest.getHeights()[i]);
                 media.setWidth(chatRequest.getWidths()[i]);
                 media.setResourceType(chatRequest.getResourceTypes()[i]);
-                
+
                 media.setMessage(message);
                 media.setConversation(conversation);
-        
+
                 medias.add(mediaRepository.save(media));
             }
-        
+
             message.setMedias(medias);
             conversation.setMedias(medias);
             messageRepository.save(message);
             conversationRepository.save(conversation);
         }
-
-        chatRequest.setId(message.getId());
-        
-        template.convertAndSend("/topic/conversation/" + chatRequest.getConversationId(), chatRequest);
     }
 
     // Delete Message

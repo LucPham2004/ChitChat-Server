@@ -4,17 +4,25 @@ import com.chitchat.server.dto.request.ChatRequest;
 import com.chitchat.server.dto.response.ApiResponse;
 import com.chitchat.server.dto.response.ChatResponse;
 import com.chitchat.server.entity.Message;
+import com.chitchat.server.entity.User;
+import com.chitchat.server.exception.AppException;
+import com.chitchat.server.exception.ErrorCode;
 import com.chitchat.server.mapper.MessageMapper;
 import com.chitchat.server.service.MessageService;
+import com.chitchat.server.service.impl.UserServiceImpl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/messages")
@@ -23,7 +31,9 @@ public class MessageController {
 
     MessageService service;
     MessageMapper chatMapper;
-    
+    UserServiceImpl userService;
+    private final SimpMessagingTemplate template;
+
     // Get messages
 
     @GetMapping("/get/{id}")
@@ -77,12 +87,32 @@ public class MessageController {
     // Send message
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic")
-    public ApiResponse<Void> sendMessage(@Payload ChatRequest request) {
-        service.sendMessage(request);
-        return ApiResponse.<Void>builder()
-            .code(1000)
-            .message("Send message successfully!")
-            .build();
+    public void sendMessage(@Payload ChatRequest request) {
+        try {
+            User sender = userService.findById(request.getSenderId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+            request.setSenderName(sender.getFirstName());
+            request.setTimestamp(System.currentTimeMillis());
+
+            // Process message based on type
+            switch (request.getType()) {
+                case "message":
+                    service.sendMessage(request);
+                    break;
+                case "call":
+                    service.handleCallRequest(request);
+                    break;
+                case "TYPING_START":
+                case "TYPING_STOP":
+                    service.handleTypingStatus(request);
+                    break;
+                default:
+                    service.sendMessage(request); // Default to regular message
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        }
     }
 
     // Delete message

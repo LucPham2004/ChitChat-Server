@@ -62,7 +62,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     public Page<Conversation> getByParticipantId(Long userId, int pageNum) {
-        if(userRepository.findById(userId).isPresent()) {
+        if(userRepository.findById(userId).isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, CONVERSATIONS_PER_PAGE);
@@ -71,7 +71,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     public Page<Conversation> getByOwnerId(Long userId, int pageNum) {
-        if(userRepository.findById(userId).isPresent()) {
+        if(userRepository.findById(userId).isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, CONVERSATIONS_PER_PAGE);

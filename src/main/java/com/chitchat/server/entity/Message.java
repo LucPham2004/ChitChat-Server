@@ -31,6 +31,8 @@ public class Message {
     
     private MessageStatus status;
 
+    private String messageType;
+
     @Column(name = "is_read")
     private boolean isRead;
 

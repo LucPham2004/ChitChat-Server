@@ -1,16 +1,18 @@
 package com.chitchat.server.exception;
 
- import com.chitchat.server.dto.response.ApiResponse;
- import org.springframework.http.HttpStatus;
- import org.springframework.http.ResponseEntity;
- import org.springframework.web.bind.MethodArgumentNotValidException;
- import org.springframework.web.bind.annotation.ControllerAdvice;
- import org.springframework.web.bind.annotation.ExceptionHandler;
+import com.chitchat.server.dto.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
- import java.util.Arrays;
- import java.util.Objects;
+import java.util.Arrays;
+import java.util.Objects;
 
 
+@Slf4j
 @ControllerAdvice
  public class GlobalExceptionHandler {
 
@@ -20,6 +22,7 @@ package com.chitchat.server.exception;
 
          apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
          apiResponse.setMessage(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+         log.info(apiResponse.getMessage());
 
          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
      }
@@ -33,6 +36,7 @@ package com.chitchat.server.exception;
                  .message(errorCode.getMessage())
                  .result(exception.getMessage())
                  .build();
+         log.info(apiResponse.getMessage());
 
          return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
      }
@@ -49,12 +53,13 @@ package com.chitchat.server.exception;
          try {
              errorCode = ErrorCode.valueOf(enumKey);
          } catch(IllegalArgumentException e) {
+             log.info(apiResponse.getMessage());
              return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
          }
 
-
          apiResponse.setCode(errorCode.getCode());
          apiResponse.setMessage(errorCode.getMessage());
+         log.info(apiResponse.getMessage());
 
          return ResponseEntity.badRequest().body(apiResponse);
      }

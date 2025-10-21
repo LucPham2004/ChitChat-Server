@@ -28,4 +28,9 @@ public class ChatRequest {
     Long[] heights;
     Long[] widths;
     String[] resourceTypes;
+
+    String type; // MESSAGE, CALL_REQUEST, CALL_ACCEPT, CALL_REJECT, CALL_END, TYPING_START, TYPING_STOP
+    String callType; // video, audio
+    String senderName; // For notifications
+    Long timestamp;
 }

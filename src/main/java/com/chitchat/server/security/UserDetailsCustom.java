@@ -49,7 +49,7 @@ public class UserDetailsCustom implements UserDetailsService {
           User user = userOptional.get();
           
           return new org.springframework.security.core.userdetails.User(
-                    user.getEmail(),
+                    user.getUsername(),
                     user.getPassword(),
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
      }

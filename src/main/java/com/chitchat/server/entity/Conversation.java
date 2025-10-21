@@ -43,7 +43,7 @@ public class Conversation {
 
     // Relationships
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "conversation_participants", 
                      joinColumns = @JoinColumn(name = "conversation_id"))
     private Set<Long> participantIds;
