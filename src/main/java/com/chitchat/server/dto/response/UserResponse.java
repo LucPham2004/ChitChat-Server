@@ -1,5 +1,6 @@
 package com.chitchat.server.dto.response;
 
+import com.chitchat.server.entity.Role;
 import com.chitchat.server.enums.Gender;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserResponse {
-     Long id;
+     String id;
      String email;
      String username;
      String firstName;
@@ -22,7 +23,7 @@ public class UserResponse {
      String location;
      String bio;
      String job;
-     Set<String> authorities;
+     Set<Role> authorities;
      String phone;
      
      String avatarPublicId;
@@ -30,7 +31,7 @@ public class UserResponse {
      String coverPhotoPublicId;
      String coverPhotoUrl;
 
-     Long conversationId;
+     String conversationId;
 
      LocalDate dob;
      Instant createdAt;

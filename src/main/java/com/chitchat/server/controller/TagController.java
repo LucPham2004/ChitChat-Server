@@ -26,7 +26,7 @@ public class TagController {
     }
     
     @PostMapping("/create/userId/{userId}")
-    public ApiResponse<Tag> createTag(@PathVariable Long userId) {
+    public ApiResponse<Tag> createTag(@PathVariable String userId) {
         return ApiResponse.<Tag>builder()
             .code(1000)
             .message("Create Tag successfully")

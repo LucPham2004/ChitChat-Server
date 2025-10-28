@@ -23,6 +23,7 @@ public class Role {
     private String authority;
     
     // Users Many-to-Many
+    @ManyToMany(mappedBy = "authorities")
     @JsonIgnore
-    private Set<Long> userIds;
+    private Set<User> users;
 }

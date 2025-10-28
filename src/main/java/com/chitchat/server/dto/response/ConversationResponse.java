@@ -12,8 +12,8 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class ConversationResponse {
-    
-    Long id;
+
+    String id;
     String name;
     String description;
     String color;
@@ -23,8 +23,9 @@ public class ConversationResponse {
 
     ChatResponse lastMessage;
 
-    Long ownerId;
-    Set<Long> participantIds;
+    String ownerId;
+    String blockerId;
+    Set<String> participantIds;
     
     boolean isGroup;
     boolean isRead;

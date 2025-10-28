@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserDTO {
-    private Long id;
+    private String id;
     private String username;
     private String firstName;
     private String lastName;

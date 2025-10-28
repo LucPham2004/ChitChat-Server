@@ -13,9 +13,9 @@ import java.util.Set;
 public class ChatMessage { 
     private MessageStatus status;
     private String content; 
-    private Long conversationId;
-    private Long senderId;
-    private Set<Long> receiverId;
+    private String conversationId;
+    private String senderId;
+    private Set<String> receiverId;
     private String url;
     private String createdAt;
 }

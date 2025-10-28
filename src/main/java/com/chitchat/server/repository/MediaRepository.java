@@ -18,13 +18,13 @@ public interface MediaRepository extends PagingAndSortingRepository<Media, Strin
 
     boolean existsById(String id);
 
-    Page<Media> findByMessageId(Long messageId, Pageable pageable);
+    Page<Media> findByMessageId(String messageId, Pageable pageable);
     
-    Page<Media> findByConversationId(Long conversationId, Pageable pageable);
+    Page<Media> findByConversationId(String conversationId, Pageable pageable);
 
-    Page<Media> findByConversationIdAndResourceType(Long conversationId, String type, Pageable pageable);
+    Page<Media> findByConversationIdAndResourceType(String conversationId, String type, Pageable pageable);
     
-    Page<Media> findByConversationIdAndResourceTypeNot(Long conversationId, String type, Pageable pageable);
+    Page<Media> findByConversationIdAndResourceTypeNot(String conversationId, String type, Pageable pageable);
 
-    int countByMessageId(Long id);
+    int countByMessageId(String id);
 }

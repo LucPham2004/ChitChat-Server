@@ -8,7 +8,7 @@ public interface TagService {
 
     Page<Tag> getAllTagsSortedByMessageCount(int pageNum);
 
-    Tag createTag(Long userId);
+    Tag createTag(String userId);
 
     void deleteTag(Long id);
 }

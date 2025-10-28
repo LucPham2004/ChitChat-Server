@@ -42,7 +42,7 @@ public class UserController {
 
         // DELETE
         @DeleteMapping("/delete/{id}")
-        public ApiResponse<Void> deleteUserById(@PathVariable Long id) {
+        public ApiResponse<Void> deleteUserById(@PathVariable String id) {
                 this.userService.deleteUserById(id);
                 return ApiResponse.<Void>builder()
                                 .code(1000)
@@ -53,7 +53,7 @@ public class UserController {
         // GET
         // Get User by id
         @GetMapping("/get/{id}")
-        public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
+        public ApiResponse<UserResponse> getUserById(@PathVariable String id) {
                 var dbUser = this.userService.getUser(id);
                 return ApiResponse.<UserResponse>builder()
                                 .code(1000)
@@ -64,8 +64,8 @@ public class UserController {
 
         @GetMapping("/get")
         public ApiResponse<UserResponse> getUserById(
-                        @RequestParam Long selfId, 
-                        @RequestParam Long otherId) {
+                        @RequestParam String selfId,
+                        @RequestParam String otherId) {
                 var dbUser = this.userService.getUser(otherId);
                 UserResponse userResponse = userMapper.toUserResponse(dbUser);
 
@@ -137,7 +137,7 @@ public class UserController {
         // Get User's friends
         @GetMapping("/get/friends")
         public ApiResponse<Page<UserDTO>> getUserFriends(
-                        @RequestParam Long userId,
+                        @RequestParam String userId,
                         @RequestParam(defaultValue = "0") int pageNum) {
                 var friends = this.userService.getUserFriends(userId, pageNum);
                 return ApiResponse.<Page<UserDTO>>builder()
@@ -150,7 +150,7 @@ public class UserController {
         // Get User's friend requests
         @GetMapping("/get/friends/request")
         public ApiResponse<Page<UserDTO>> getUserFriendRequests(
-                        @RequestParam Long userId,
+                        @RequestParam String userId,
                         @RequestParam(defaultValue = "0") int pageNum) {
                 var friends = this.userService.getUserFriendRequests(userId, pageNum);
                 return ApiResponse.<Page<UserDTO>>builder()
@@ -163,8 +163,8 @@ public class UserController {
         // Get mutual friends
         @GetMapping("/get/friends/mutual")
         public ApiResponse<Page<UserDTO>> getMutualFriends(
-                        @RequestParam Long meId,
-                        @RequestParam Long youId,
+                        @RequestParam String meId,
+                        @RequestParam String youId,
                         @RequestParam(defaultValue = "0") int pageNum) {
                 var friends = this.userService.getMutualFriends(meId, youId, pageNum);
                 return ApiResponse.<Page<UserDTO>>builder()
@@ -178,7 +178,7 @@ public class UserController {
         // Get User's friends
         @GetMapping("/get/friends/suggested")
         public ApiResponse<Page<UserDTO>> getSuggestedFriends(
-                        @RequestParam Long userId,
+                        @RequestParam String userId,
                         @RequestParam(defaultValue = "0") int pageNum) {
                 var friends = this.userService.getSuggestedFriends(userId, pageNum);
                 return ApiResponse.<Page<UserDTO>>builder()
@@ -192,7 +192,7 @@ public class UserController {
         // Get User's friends
         @GetMapping("/search/name")
         public ApiResponse<Page<UserDTO>> searchUsersByName(
-                        @RequestParam Long userId,
+                        @RequestParam String userId,
                         @RequestParam String name,
                         @RequestParam(defaultValue = "0") int pageNum) {
                 var friends = this.userService.searchUsersByName(userId, name, pageNum);
@@ -204,10 +204,10 @@ public class UserController {
         }
 
         @GetMapping("/search-ids")
-        public ResponseEntity<List<Long>> searchUserIds(
+        public ResponseEntity<List<String>> searchUserIds(
                         @RequestParam String name, 
                         @RequestParam(defaultValue = "0") int pageNum) {
-                List<Long> userIds = userService.searchUserIds(name, pageNum);
+                List<String> userIds = userService.searchUserIds(name, pageNum);
                 return ResponseEntity.ok(userIds);
         }
 
@@ -269,12 +269,12 @@ public class UserController {
         }
 
         @PostMapping("/verify-otp")
-        public ApiResponse<Boolean> verifyOtp(@RequestBody Long userId, String otp) {
+        public ApiResponse<Boolean> verifyOtp(@RequestBody String userId, String otp) {
                 var isVerified = this.userService.verifyOtp(userId, otp);
                 return ApiResponse.<Boolean>builder()
                                 .code(1000)
                                 .message("Create user successfully!")
-                                .result(Boolean.valueOf(isVerified))
+                                .result(isVerified)
                                 .build();
         }
 }

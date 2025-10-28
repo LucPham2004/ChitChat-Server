@@ -36,18 +36,18 @@ public class ConversationServiceImpl implements ConversationService {
 
     // GET METHODS
 
-    public Conversation getById(Long id) {
+    public Conversation getById(String id) {
         return conversationRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
     
     // Get direct message conversation between two users, if not exists, create new one
-    public Conversation getDirectMessage(Long selfId, Long otherId) {
+    public Conversation getDirectMessage(String selfId, String otherId) {
         Conversation conversation = conversationRepository.findDirectMessage(selfId, otherId).orElse(null);
         
         if(conversation == null) {
             ConversationRequest conversationRequest = new ConversationRequest();
 
-            Set<Long> participantIds = new HashSet<>();
+            Set<String> participantIds = new HashSet<>();
             participantIds.add(selfId);
             participantIds.add(otherId);
             conversationRequest.setParticipantIds(participantIds);
@@ -61,8 +61,8 @@ public class ConversationServiceImpl implements ConversationService {
         return conversation;
     }
 
-    public Page<Conversation> getByParticipantId(Long userId, int pageNum) {
-        if(userRepository.findById(userId).isEmpty()) {
+    public Page<Conversation> getByParticipantId(String userId, int pageNum) {
+        if(userRepository.findByIdAndIsActiveTrue(userId).isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, CONVERSATIONS_PER_PAGE);
@@ -70,8 +70,8 @@ public class ConversationServiceImpl implements ConversationService {
         return conversationRepository.findByParticipantIdsContaining(userId, pageable);
     }
 
-    public Page<Conversation> getByOwnerId(Long userId, int pageNum) {
-        if(userRepository.findById(userId).isEmpty()) {
+    public Page<Conversation> getByOwnerId(String userId, int pageNum) {
+        if(userRepository.findByIdAndIsActiveTrue(userId).isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, CONVERSATIONS_PER_PAGE);
@@ -80,7 +80,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     // Search conversations by name or participant names
-    public List<Conversation> searchConversations(String keyword, Long userId, int pageNum) {
+    public List<Conversation> searchConversations(String keyword, String userId, int pageNum) {
         Pageable pageable = PageRequest.of(pageNum, CONVERSATIONS_PER_PAGE);
 
         // Find conversations by name (not null)
@@ -89,7 +89,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .getContent();
 
         // Search users by keyword
-        List<Long> userIds = userRepository.searchByAnyName(keyword, pageable).stream().map(User::getId).collect(Collectors.toList());
+        List<String> userIds = userRepository.searchByAnyName(userId, keyword, pageable).stream().map(User::getId).collect(Collectors.toList());
 
         List<Conversation> byParticipants = new ArrayList<>();
 
@@ -105,14 +105,14 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
 
-    public List<ChatParticipants> getParticipantsByConvId(Long conversationId) {
+    public List<ChatParticipants> getParticipantsByConvId(String conversationId) {
         Conversation conversation = conversationRepository.findById(conversationId)
             .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
 
         List<ChatParticipants> list = new ArrayList<>();
 
-        for(Long userId: conversation.getParticipantIds()) {
-            User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+        for(String userId: conversation.getParticipantIds()) {
+            User user = userRepository.findByIdAndIsActiveTrue(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
             
             ChatParticipants participant = ChatParticipants.builder()
                 .id(user.getId())
@@ -129,17 +129,17 @@ public class ConversationServiceImpl implements ConversationService {
         return list;
     }
 
-    public Long getDirectMessageId(Long selfId, Long otherId) {
+    public String getDirectMessageId(String selfId, String otherId) {
         if(selfId.equals(otherId)) {
             return null;
         }
-        
-        Long conversationId = conversationRepository.findDirectMessageId(selfId, otherId);
+
+        String conversationId = conversationRepository.findDirectMessageId(selfId, otherId);
         
         if(conversationId == null) {
             ConversationRequest conversationRequest = new ConversationRequest();
 
-            Set<Long> participantIds = new HashSet<>();
+            Set<String> participantIds = new HashSet<>();
             participantIds.add(selfId);
             participantIds.add(otherId);
             conversationRequest.setParticipantIds(participantIds);
@@ -251,7 +251,7 @@ public class ConversationServiceImpl implements ConversationService {
 
     // Update conversation partially
     @Transactional
-    public Conversation updateConversationPartially(Long id, Map<String, Object> updates) {
+    public Conversation updateConversationPartially(String id, Map<String, Object> updates) {
         Conversation conversation = conversationRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
 
@@ -302,14 +302,14 @@ public class ConversationServiceImpl implements ConversationService {
                 case "participantIds":
                     @SuppressWarnings("unchecked")
                     List<Integer> participantList = (List<Integer>) value; // Jackson chuyển Set<Long> thành List<Integer>
-                    Set<Long> participantIds = participantList.stream()
-                            .map(Long::valueOf)
+                    Set<String> participantIds = participantList.stream()
+                            .map(String::valueOf)
                             .collect(Collectors.toSet());
                     conversation.setParticipantIds(participantIds);
                     break;
 
                 case "ownerId":
-                    Long ownerId = ((Number) value).longValue();
+                    String ownerId = ((String) value);
                     if (!ownerId.equals(conversation.getOwnerId())) {
                         conversation.setOwnerId(ownerId);
                     }
@@ -407,16 +407,16 @@ public class ConversationServiceImpl implements ConversationService {
         conversationRepository.delete(conversation);
     }
 
-    public void deleteConversationById(Long id) {
+    public void deleteConversationById(String id) {
         conversationRepository.deleteById(id);
     }
 
     // OTHER METHODS
-    public boolean existsById(Long id) {
+    public boolean existsById(String id) {
         return conversationRepository.existsById(id);
     }
 
-    public int countByOwnerId(Long userId) {
+    public int countByOwnerId(String userId) {
         return conversationRepository.countByOwnerId(userId);
     }
 }

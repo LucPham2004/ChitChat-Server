@@ -10,13 +10,13 @@ import java.util.List;
 
 @Repository
 public interface MessageReactionRepository extends JpaRepository<MessageReaction, Long> {
-    MessageReaction findByUserIdAndMessageId(Long userId, Long messageId);
+    MessageReaction findByUserIdAndMessageId(String userId, String messageId);
 
-    List<MessageReaction> findByMessageId(Long messageId);
+    List<MessageReaction> findByMessageId(String messageId);
 
-    int countByMessageId(Long messageId);
+    int countByMessageId(String messageId);
 
-    int countByUserId(Long id);
+    int countByUserId(String id);
     
     @Query("""
             SELECT COUNT(mr) FROM MessageReaction mr

@@ -31,7 +31,7 @@ public class MessageMapper {
         Message message = new Message();
         message.setContent(request.getContent());
 
-        message.setSenderId(userRepository.findById(request.getSenderId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)).getId());
+        message.setSenderId(userRepository.findByIdAndIsActiveTrue(request.getSenderId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)).getId());
         message.setReceiverIds(request.getRecipientId());
         message.setConversation(conversationRepository.findById(request.getConversationId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)));
         message.setReactions(new HashSet<>());

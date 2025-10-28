@@ -32,7 +32,7 @@ public class MediaController {
 
     @GetMapping("/get/message")
     public ApiResponse<Page<MediaResponse>> getMediaByMessageId(
-                @RequestParam Long messageId, 
+                @RequestParam String messageId,
                 @RequestParam int pageNum) {
         Page<Media> medias = mediaService.getMediaByMessageId(messageId, pageNum);
         return ApiResponse.<Page<MediaResponse>>builder()
@@ -44,7 +44,7 @@ public class MediaController {
 
     @GetMapping("/get/conversation")
     public ApiResponse<Page<MediaResponse>> getMediasAndFilesByConversationId(
-                @RequestParam Long conversationId, 
+                @RequestParam String conversationId,
                 @RequestParam int pageNum) {
         Page<Media> medias = mediaService.getMediasAndFilesByConversationId(conversationId, pageNum);
         return ApiResponse.<Page<MediaResponse>>builder()
@@ -56,7 +56,7 @@ public class MediaController {
     
     @GetMapping("/get/conversation/media")
     public ApiResponse<Page<MediaResponse>> getMediasByConversationId(
-                @RequestParam Long conversationId, 
+                @RequestParam String conversationId,
                 @RequestParam int pageNum) {
         Page<Media> medias = mediaService.getMediasByConversationId(conversationId, pageNum);
         return ApiResponse.<Page<MediaResponse>>builder()
@@ -68,7 +68,7 @@ public class MediaController {
     
     @GetMapping("/get/conversation/raw")
     public ApiResponse<Page<MediaResponse>> getRawFilesByConversationId(
-                @RequestParam Long conversationId, 
+                @RequestParam String conversationId,
                 @RequestParam int pageNum) {
         Page<Media> medias = mediaService.getRawFilesByConversationId(conversationId, pageNum);
         return ApiResponse.<Page<MediaResponse>>builder()

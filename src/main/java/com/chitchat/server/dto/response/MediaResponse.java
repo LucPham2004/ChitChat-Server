@@ -18,8 +18,8 @@ public class MediaResponse {
     Long width;
     String resourceType;
 
-    Long messageId;
-    Long conversationId;
+    String messageId;
+    String conversationId;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

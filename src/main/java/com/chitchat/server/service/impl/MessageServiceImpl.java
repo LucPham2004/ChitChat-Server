@@ -42,14 +42,14 @@ public class MessageServiceImpl implements MessageService {
 
     // Get messages
 
-    public Message getMessage(Long messageId) {
+    public Message getMessage(String messageId) {
         if(!messageRepository.existsById(messageId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         return messageRepository.findById(messageId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
 
-    public Page<Message> getConversationMessages(Long conversationId, int pageNum) {
+    public Page<Message> getConversationMessages(String conversationId, int pageNum) {
         if(!conversationRepository.existsById(conversationId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -59,7 +59,7 @@ public class MessageServiceImpl implements MessageService {
         return messageRepository.findByConversationId(conversationId, pageable);
     }
 
-    public Page<Message> getUserMessages(Long senderId, int pageNum) {
+    public Page<Message> getUserMessages(String senderId, int pageNum) {
         User user = userService.findById(senderId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
         if(user == null) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
@@ -70,7 +70,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     // Search messages by keyword in a conversation
-    public Page<Message> findMessagesByKeyword(Long conversationId, String keyword, int pageNum) {
+    public Page<Message> findMessagesByKeyword(String conversationId, String keyword, int pageNum) {
         if(!conversationRepository.existsById(conversationId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -88,7 +88,7 @@ public class MessageServiceImpl implements MessageService {
 
         chatRequest.setId(message.getId());
 
-        for(Long participantId: conversation.getParticipantIds()) {
+        for(String participantId: conversation.getParticipantIds()) {
             template.convertAndSend("/topic/user/" + participantId, chatRequest);
         }
 
@@ -112,7 +112,7 @@ public class MessageServiceImpl implements MessageService {
         request.setId(callMessage.getId());
 
         // Send to all participants
-        for (Long participantId : conversation.getParticipantIds()) {
+        for (String participantId : conversation.getParticipantIds()) {
             template.convertAndSend("/topic/user/" + participantId, request);
         }
     }
@@ -124,7 +124,7 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
 
         // Send to other participants (not sender)
-        for (Long participantId : conversation.getParticipantIds()) {
+        for (String participantId : conversation.getParticipantIds()) {
             if (!participantId.equals(request.getSenderId())) {
                 template.convertAndSend("/topic/user/" + participantId, request);
             }
@@ -170,7 +170,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     // Delete Message
-    public void deleteMessage(Long messageId) {
+    public void deleteMessage(String messageId) {
         if(!messageRepository.existsById(messageId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -178,7 +178,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     // Update Message
-    public Message updateMessage(Long messageId, String content) {
+    public Message updateMessage(String messageId, String content) {
         if(!messageRepository.existsById(messageId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }

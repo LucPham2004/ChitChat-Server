@@ -4,13 +4,13 @@ import com.chitchat.server.entity.MessageReaction;
 import java.util.List;
 
 public interface MessageReactionService {
-    int getMessageReactionCount(Long messageId);
+    int getMessageReactionCount(String messageId);
 
-    List<MessageReaction> getMessageReactions(Long messageId);
+    List<MessageReaction> getMessageReactions(String messageId);
 
     // Create Message Reaction
-    MessageReaction createMessageReaction(Long userId, Long messageId, String emoji);
+    MessageReaction createMessageReaction(String userId, String messageId, String emoji);
 
     // Delete Message Reaction
-    void deleteMessageReaction(Long userId, Long messageId);
+    void deleteMessageReaction(String userId, String messageId);
 }

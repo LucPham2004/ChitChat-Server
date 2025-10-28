@@ -25,31 +25,23 @@ public class UserDetailsCustom implements UserDetailsService {
 
      @Override
      public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-          // find user in database
-          // = this.userService.handleGetUserByUsername(username);
-          Optional<User> userOptional = userRepository.findByUsername(login);
-          log.info("username not empty");
-
-          if (userOptional.isEmpty()) {
-               log.info("username empty");
-               userOptional = userRepository.findByEmail(login);
-          }
+          Optional<User> userOptional = userRepository.findByEmailAndIsActiveTrue(login);
 
           if (userOptional.isEmpty()) {
                log.info("email empty");
-               userOptional = userRepository.findByPhone(login);
+               userOptional = userRepository.findByPhoneAndIsActiveTrue(login);
           }
+
           if (userOptional.isEmpty()) {
-               // Nếu không tìm thấy user ở tất cả các trường hợp, ném ngoại lệ tại đây
                log.info("phone empty");
-               throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
+               throw new UsernameNotFoundException("User not found or not active");
           }
 
           // Lấy user từ Optional nếu có
           User user = userOptional.get();
           
           return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
+                    user.getEmail(),
                     user.getPassword(),
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
      }

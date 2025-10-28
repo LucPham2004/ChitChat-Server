@@ -11,8 +11,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class FriendShipResponse {
     Long friendshipId;
-    Long requesterId;
-    Long receiverId;
+    String requesterId;
+    String receiverId;
 
     FriendshipStatus status;
 }

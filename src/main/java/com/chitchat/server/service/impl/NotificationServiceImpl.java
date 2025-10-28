@@ -27,7 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
     static int NOTIFY_PER_PAGE = 10;
 
     // Get User Notifications
-    public Page<Notification> getUserNotifications(Long userId, int pageNum) {
+    public Page<Notification> getUserNotifications(String userId, int pageNum) {
         User user = userService.findById(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
         if(user == null) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);

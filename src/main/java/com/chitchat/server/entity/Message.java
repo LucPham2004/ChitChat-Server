@@ -20,8 +20,8 @@ import java.util.Set;
 @Builder
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @Lob
     @Column(columnDefinition = "MEDIUMTEXT")
@@ -45,9 +45,9 @@ public class Message {
     // Relationships
 
     // ManyToOne with User
-    private Long senderId;
+    private String senderId;
     
-    private Set<Long> receiverIds;
+    private Set<String> receiverIds;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")

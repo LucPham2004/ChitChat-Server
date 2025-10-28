@@ -21,7 +21,7 @@ public class NotificationController {
     // Get User Notifications
     @GetMapping("/get")
     public ApiResponse<Page<Notification>> getUserNotifications(
-            @RequestParam Long userId,
+            @RequestParam String userId,
             @RequestParam(defaultValue = "0") int pageNum) {
         Page<Notification> notifications = notificationService.getUserNotifications(userId, pageNum);
         return ApiResponse.<Page<Notification>>builder()

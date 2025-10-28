@@ -11,9 +11,9 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserMessageDTO {
-    Long userId;
+    String userId;
     
-    Set<Long> conversationIds;
-    Set<Long> messageIds;
+    Set<String> conversationIds;
+    Set<String> messageIds;
     Set<Long> messageReactionIds;
 }

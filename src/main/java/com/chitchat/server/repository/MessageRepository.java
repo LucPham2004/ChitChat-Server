@@ -12,25 +12,25 @@ import java.util.Optional;
 
 
 @Repository
-public interface MessageRepository extends PagingAndSortingRepository<Message, Long> {
+public interface MessageRepository extends PagingAndSortingRepository<Message, String> {
     Message save(Message Message);
 
     void delete(Message Message);
 
-    Optional<Message> findById(Long id);
+    Optional<Message> findById(String id);
 
-    boolean existsById(Long id);
+    boolean existsById(String id);
 
-    Page<Message> findByConversationId(Long conversationId, Pageable pageable);
+    Page<Message> findByConversationId(String conversationId, Pageable pageable);
 
-    Page<Message> findBySenderId(Long senderId, Pageable pageable);
+    Page<Message> findBySenderId(String senderId, Pageable pageable);
 
     // Search messages by keyword in a conversation
     @Query(value = "SELECT * FROM messages WHERE conversation_id = :conversationId AND LOWER(content) LIKE LOWER(CONCAT('%', :contentKeyword, '%'))", 
         nativeQuery = true)
-    Page<Message> findByConversationIdAndContentContainingIgnoreCase(@Param("conversationId") Long conversationId, @Param("contentKeyword") String contentKeyword, Pageable pageable);
+    Page<Message> findByConversationIdAndContentContainingIgnoreCase(@Param("conversationId") String conversationId, @Param("contentKeyword") String contentKeyword, Pageable pageable);
 
-    int countBySenderId(Long senderId);
+    int countBySenderId(String senderId);
 
     @Query("""
             SELECT COUNT(m) FROM Message m

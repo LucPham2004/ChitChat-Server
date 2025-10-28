@@ -37,7 +37,7 @@ public class MessageController {
     // Get messages
 
     @GetMapping("/get/{id}")
-    public ApiResponse<ChatResponse> getMessageById(@PathVariable Long id) {
+    public ApiResponse<ChatResponse> getMessageById(@PathVariable String id) {
         Message message = service.getMessage(id);
         return ApiResponse.<ChatResponse>builder()
             .code(1000)
@@ -48,7 +48,7 @@ public class MessageController {
 
     @GetMapping("/get/conversation")
     public ApiResponse<Page<ChatResponse>> getConversationMessages(
-                @RequestParam Long conversationId,
+                @RequestParam String conversationId,
                 @RequestParam int pageNum) {
         Page<Message> messages = service.getConversationMessages(conversationId, pageNum);
         return ApiResponse.<Page<ChatResponse>>builder()
@@ -60,7 +60,7 @@ public class MessageController {
 
     @GetMapping("/get/user")
     public ApiResponse<Page<ChatResponse>> getUserMessages(
-                @RequestParam Long senderId,
+                @RequestParam String senderId,
                 @RequestParam int pageNum) {
         Page<Message> messages = service.getUserMessages(senderId, pageNum);
         return ApiResponse.<Page<ChatResponse>>builder()
@@ -73,7 +73,7 @@ public class MessageController {
     // Search messages by keyword in a conversation
     @GetMapping("/search")
     public ApiResponse<Page<ChatResponse>> findMessagesByKeyword(
-                @RequestParam Long conversationId,
+                @RequestParam String conversationId,
                 @RequestParam String keyword,
                 @RequestParam int pageNum) {
         Page<Message> messages = service.findMessagesByKeyword(conversationId, keyword, pageNum);
@@ -117,7 +117,7 @@ public class MessageController {
 
     // Delete message
     @DeleteMapping("/delete/{messageId}")
-    public ApiResponse<Void> deleteMessage(@PathVariable Long messageId) {
+    public ApiResponse<Void> deleteMessage(@PathVariable String messageId) {
         this.service.deleteMessage(messageId);
         return ApiResponse.<Void>builder()
             .code(1000)
@@ -128,7 +128,7 @@ public class MessageController {
     // Update message
     @PutMapping("/update")
     public ApiResponse<Void> updateMessage(
-                @RequestParam Long messageId,
+                @RequestParam String messageId,
                 @RequestParam String content) {
         this.service.updateMessage(messageId, content);
         return ApiResponse.<Void>builder()

@@ -11,7 +11,6 @@ import java.util.Optional;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, String> {
     Optional<Role> findByAuthority(String authority);
-    Optional<Role> findById(String id);
     
     @Query("""
             SELECT COUNT(ro) FROM Role ro

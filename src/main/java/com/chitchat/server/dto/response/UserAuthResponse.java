@@ -1,5 +1,6 @@
 package com.chitchat.server.dto.response;
 
+import com.chitchat.server.entity.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,13 +12,13 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserAuthResponse {
-     Long id;
+     String id;
 
      String username;
      String email;
      String password;
 
-     Set<String> authorities;
+     Set<Role> authorities;
 
      String phone;
      String avatarUrl;

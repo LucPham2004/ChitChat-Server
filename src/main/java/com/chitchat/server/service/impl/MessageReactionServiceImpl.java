@@ -25,11 +25,11 @@ public class MessageReactionServiceImpl implements MessageReactionService {
     UserServiceImpl userService;
 
     // Get Message Reaction count
-    public int getMessageReactionCount(Long messageId) {
+    public int getMessageReactionCount(String messageId) {
         return messageReactionRepository.countByMessageId(messageId);
     }
 
-    public List<MessageReaction> getMessageReactions(Long messageId) {
+    public List<MessageReaction> getMessageReactions(String messageId) {
         if (!messageRepository.existsById(messageId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -38,7 +38,7 @@ public class MessageReactionServiceImpl implements MessageReactionService {
     }
 
     // Create Message Reaction
-    public MessageReaction createMessageReaction(Long userId, Long messageId, String emoji) {
+    public MessageReaction createMessageReaction(String userId, String messageId, String emoji) {
         User user = userService.findById(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
         if(user == null) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
@@ -58,7 +58,7 @@ public class MessageReactionServiceImpl implements MessageReactionService {
     }
 
     // Delete Message Reaction
-    public void deleteMessageReaction(Long userId, Long messageId) {
+    public void deleteMessageReaction(String userId, String messageId) {
         User user = userService.findById(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
         if (!messageRepository.existsById(messageId) || user == null) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);

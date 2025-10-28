@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -44,11 +45,12 @@ public class DataInitializer {
         String firstName = "Admin";
 
         if (userRepository.findByUsername(adminUsername).isEmpty()) {
-            Set<String> adminRoles = new HashSet<>();
-            String adminRole = "ADMIN";
-            String userRole = "USER";
-            adminRoles.add(adminRole);
-            adminRoles.add(userRole);
+            Set<Role> adminRoles = new HashSet<>();
+            Optional<Role> adminRole = roleRepository.findByAuthority("ADMIN");
+            Optional<Role> userRole = roleRepository.findByAuthority("USER");
+
+            adminRole.ifPresent(adminRoles::add);
+            userRole.ifPresent(adminRoles::add);
 
             User adminUser = new User();
             adminUser.setUsername(adminUsername);

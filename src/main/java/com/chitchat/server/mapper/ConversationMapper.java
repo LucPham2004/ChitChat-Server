@@ -55,11 +55,11 @@ public class ConversationMapper {
             .build();
     }
 
-    public ConversationShortResponse toConversationShortResponse(Conversation conversation, Long userId) {
+    public ConversationShortResponse toConversationShortResponse(Conversation conversation, String userId) {
 
         // Đặt tên conversation linh hoạt từng góc nhìn
         // Danh sách participant ngoại trừ userId
-        List<Long> otherParticipants = conversation.getParticipantIds().stream()
+        List<String> otherParticipants = conversation.getParticipantIds().stream()
         .filter(id -> !id.equals(userId))
         .toList();
 
@@ -70,7 +70,7 @@ public class ConversationMapper {
             // Nếu là group chat -> lấy tên tất cả participants khác userId
             List<String> participantNames = otherParticipants.stream().limit(3)
                 .map(id -> { 
-                    User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                    User user = userRepository.findByIdAndIsActiveTrue(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                     String name;
                     if(user.getLastName() == null) {
                         name = user.getFirstName();
@@ -83,7 +83,7 @@ public class ConversationMapper {
             conversationName = String.join(", ", participantNames);
         } else {
             // Nếu không phải group chat -> chỉ lấy tên của 1 người còn lại
-            User user = userRepository.findById(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+            User user = userRepository.findByIdAndIsActiveTrue(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
             conversationName = user.getFirstName() + " " + user.getLastName();
         }
 
@@ -98,7 +98,7 @@ public class ConversationMapper {
 
         // Lấy danh sách avatarUrls
         String defaultAvatar = "/user_default.avif";
-        Set<Long> participants = conversation.getParticipantIds();
+        Set<String> participants = conversation.getParticipantIds();
         List<String> avatarUrls = new ArrayList<>();
 
         if (conversation.getAvatarUrl() != null) {
@@ -108,13 +108,13 @@ public class ConversationMapper {
                 avatarUrls = participants.stream()
                     .limit(4)
                     .map(id -> {
-                        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                        User user = userRepository.findByIdAndIsActiveTrue(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                         return user.getAvatarUrl() != null ? user.getAvatarUrl() : defaultAvatar;
                     })
                     .collect(Collectors.toList());
             } else {
                 if (!otherParticipants.isEmpty()) {
-                    User user = userRepository.findById(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                    User user = userRepository.findByIdAndIsActiveTrue(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                     avatarUrls.add(user.getAvatarUrl() != null ? user.getAvatarUrl() : defaultAvatar);
                 } else {
                     avatarUrls.add(defaultAvatar);
@@ -135,11 +135,11 @@ public class ConversationMapper {
             .build();
     }
 
-    public ConversationResponse toConversationResponse(Conversation conversation, Long userId) {
+    public ConversationResponse toConversationResponse(Conversation conversation, String userId) {
 
         // Đặt tên conversation linh hoạt từng góc nhìn
         // Danh sách participant ngoại trừ userId
-        List<Long> otherParticipants = conversation.getParticipantIds().stream()
+        List<String> otherParticipants = conversation.getParticipantIds().stream()
             .filter(id -> !id.equals(userId))
             .toList();
 
@@ -150,7 +150,7 @@ public class ConversationMapper {
             // Nếu là group chat -> lấy tên tất cả participants khác userId
             List<String> participantNames = otherParticipants.stream().limit(3)
                 .map(id -> {
-                    User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                    User user = userRepository.findByIdAndIsActiveTrue(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                     String name;
                     if(user.getLastName() == null) {
                         name = user.getFirstName();
@@ -163,7 +163,7 @@ public class ConversationMapper {
             conversationName = String.join(", ", participantNames);
         } else {
             // Nếu không phải group chat -> chỉ lấy tên của 1 người còn lại
-            User user = userRepository.findById(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+            User user = userRepository.findByIdAndIsActiveTrue(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
             conversationName = user.getFirstName() + " " + user.getLastName();
         }
 
@@ -178,7 +178,7 @@ public class ConversationMapper {
 
         // Lấy danh sách avatarUrls
         String defaultAvatar = "/user_default.avif";
-        Set<Long> participants = conversation.getParticipantIds();
+        Set<String> participants = conversation.getParticipantIds();
         List<String> avatarUrls = new ArrayList<>();
 
         if (conversation.getAvatarUrl() != null) {
@@ -188,13 +188,13 @@ public class ConversationMapper {
                 avatarUrls = participants.stream()
                     .limit(4)
                     .map(id -> {
-                        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                        User user = userRepository.findByIdAndIsActiveTrue(id).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                         return user.getAvatarUrl() != null ? user.getAvatarUrl() : defaultAvatar;
                     })
                     .collect(Collectors.toList());
             } else {
                 if (!otherParticipants.isEmpty()) {
-                    User user = userRepository.findById(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+                    User user = userRepository.findByIdAndIsActiveTrue(otherParticipants.get(0)).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
                     avatarUrls.add(user.getAvatarUrl() != null ? user.getAvatarUrl() : defaultAvatar);
                 } else {
                     avatarUrls.add(defaultAvatar);
@@ -220,6 +220,7 @@ public class ConversationMapper {
             .isArchived(conversation.isArchived())
             .isDeleted(conversation.isDeleted())
             .isBlocked(conversation.isBlocked())
+            .blockerId(conversation.getBlockerId())
             .isReported(conversation.isReported())
             .isSpam(conversation.isSpam())
             .isMarkedAsUnread(conversation.isMarkedAsUnread())

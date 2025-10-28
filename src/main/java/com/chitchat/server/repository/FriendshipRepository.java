@@ -23,7 +23,7 @@ public interface FriendshipRepository extends PagingAndSortingRepository<Friends
            WHERE ((f.sender.id = :senderId AND f.recipient.id = :receiverId) OR
                 (f.sender.id = :receiverId AND f.recipient.id = :senderId))
            """)
-    Friendship findBy2UserIds(Long senderId, Long receiverId);
+    Friendship findBy2UserIds(String senderId, String receiverId);
 
     @Query("""
             SELECT COUNT(f) FROM Friendship f

@@ -12,16 +12,16 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class ConversationShortResponse {
-    
-    Long id;
+
+    String id;
     String name;
     List<String> avatarUrls;
     String avatarPublicId;
 
     ChatResponse lastMessage;
 
-    Long ownerId;
-    Set<Long> participantIds;
+    String ownerId;
+    Set<String> participantIds;
     boolean isGroup;
     boolean isRead;
     

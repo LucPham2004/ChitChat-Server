@@ -5,7 +5,7 @@ import com.chitchat.server.enums.NotificationType;
 import org.springframework.data.domain.Page;
 
 public interface NotificationService {
-    Page<Notification> getUserNotifications(Long userId, int pageNum);
+    Page<Notification> getUserNotifications(String userId, int pageNum);
 
     // Create Notification
     Notification notifyUser(String username, String message, NotificationType type);

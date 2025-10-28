@@ -3,6 +3,7 @@ package com.chitchat.server.service.impl;
 import com.chitchat.server.dto.request.*;
 import com.chitchat.server.dto.response.UserDTO;
 import com.chitchat.server.entity.Friendship;
+import com.chitchat.server.entity.Role;
 import com.chitchat.server.entity.User;
 import com.chitchat.server.enums.FriendshipStatus;
 import com.chitchat.server.enums.Gender;
@@ -10,6 +11,7 @@ import com.chitchat.server.exception.AppException;
 import com.chitchat.server.exception.ErrorCode;
 import com.chitchat.server.mapper.UserMapper;
 import com.chitchat.server.repository.FriendshipRepository;
+import com.chitchat.server.repository.RoleRepository;
 import com.chitchat.server.repository.UserRepository;
 import com.chitchat.server.service.UserService;
 import lombok.AccessLevel;
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService {
     UserMapper userMapper;
     FriendshipRepository friendshipRepository;
     ConversationServiceImpl conversationService;
+    RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
 
     static int USERS_PER_PAGE = 20;
@@ -46,8 +49,8 @@ public class UserServiceImpl implements UserService {
     // GET
 
     // Get User friends
-    public Page<UserDTO> getUserFriends(Long userId, int pageNum) {
-        if (!userRepository.existsById(userId)) {
+    public Page<UserDTO> getUserFriends(String userId, int pageNum) {
+        if (!userRepository.existsByIdAndIsActiveTrue(userId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
@@ -58,8 +61,8 @@ public class UserServiceImpl implements UserService {
     }
     
     // Get User's friend requests
-    public Page<UserDTO> getUserFriendRequests(Long userId, int pageNum) {
-        if (!userRepository.existsById(userId)) {
+    public Page<UserDTO> getUserFriendRequests(String userId, int pageNum) {
+        if (!userRepository.existsByIdAndIsActiveTrue(userId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
@@ -70,15 +73,15 @@ public class UserServiceImpl implements UserService {
     }
 
     // Get User friends
-    public Page<UserDTO> getSuggestedFriends(Long userId, int pageNum) {
-        if (!userRepository.existsById(userId)) {
+    public Page<UserDTO> getSuggestedFriends(String userId, int pageNum) {
+        if (!userRepository.existsByIdAndIsActiveTrue(userId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
 
         Page<User> friends = userRepository.findSuggestedFriends(userId, pageable);
 
-        if(friends.getNumber() < 1) {
+        if(friends.isEmpty()) {
             friends = userRepository.findRandomUsers(userId, pageable);
         }
 
@@ -86,8 +89,8 @@ public class UserServiceImpl implements UserService {
     }
 
     // Get mutual friends
-    public Page<UserDTO> getMutualFriends(Long meId, Long youId, int pageNum) {
-        if (!userRepository.existsById(meId) || !userRepository.existsById(youId)) {
+    public Page<UserDTO> getMutualFriends(String meId, String youId, int pageNum) {
+        if (!userRepository.existsByIdAndIsActiveTrue(meId) || !userRepository.existsByIdAndIsActiveTrue(youId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
@@ -98,16 +101,16 @@ public class UserServiceImpl implements UserService {
     }
 
     // Search users by name
-    public Page<UserDTO> searchUsersByName(Long userId, String name, int pageNum) {
+    public Page<UserDTO> searchUsersByName(String userId, String name, int pageNum) {
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
 
-        Page<User> users = userRepository.searchByAnyName(name, pageable);
+        Page<User> users = userRepository.searchByAnyName(userId, name, pageable);
 
         return getUsersWithMutualFriendsCount(userId, users);
     }
 
     // Search User ids by name
-    public List<Long> searchUserIds(String name, int pageNum) {
+    public List<String> searchUserIds(String name, int pageNum) {
         Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
 
         Page<User> users = userRepository.searchByAnyName(name, pageable);
@@ -115,16 +118,16 @@ public class UserServiceImpl implements UserService {
     }
 
     // Get User by Id
-    public Optional<User> findById(Long id) {
-        Optional<User> optionalUser = userRepository.findById(id);
+    public Optional<User> findById(String id) {
+        Optional<User> optionalUser = userRepository.findByIdAndIsActiveTrue(id);
         if (optionalUser.isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
         return optionalUser;
     }
 
-    public User getUser(Long id) {
-        return userRepository.findById(id)
+    public User getUser(String id) {
+        return userRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
 
@@ -139,18 +142,20 @@ public class UserServiceImpl implements UserService {
     // Create user
     @Transactional
     public User createUser(UserCreationRequest request) {
-        log.info("request: " + request.toString() + " existsByUsername: " + userRepository.existsByUsername(request.getUsername()) + " existsByEmail: " + userRepository.existsByEmail(request.getEmail()) + " existsByPhone: " + userRepository.existsByPhone(request.getPhone()));
-        if (userRepository.existsByUsername(request.getUsername()) && request.getUsername() != null
-                || userRepository.existsByEmail(request.getEmail()) && request.getEmail() != null
-                || userRepository.existsByPhone(request.getPhone()) && request.getPhone() != null) {
-                    log.info("this username/email/phone is already taken: " + 
-                        request.getUsername() + "/" + request.getEmail() + "/" + request.getPhone());
-            throw new AppException(ErrorCode.ENTITY_EXISTED);
+        log.info("request: " + request.toString() + " existsByEmailAndIsActiveTrue: " + userRepository.existsByEmailAndIsActiveTrue(request.getEmail()) + " existsByPhoneAndIsActiveTrue: " + userRepository.existsByPhoneAndIsActiveTrue(request.getPhone()));
+        if (userRepository.existsByEmailAndIsActiveTrue(request.getEmail()) && request.getEmail() != null
+                || userRepository.existsByPhoneAndIsActiveTrue(request.getPhone()) && request.getPhone() != null) {
+                    log.info("this email/phone is already taken: " +
+                        request.getEmail() + "/" + request.getPhone());
+            throw new AppException(ErrorCode.ACCOUNT_EXISTED);
         }
         User user = userMapper.toUser(request);
 
-        Set<String> authorities = new HashSet<>();
-        authorities.add("USER");
+        Set<Role> authorities = new HashSet<>();
+
+        Optional<Role> role = roleRepository.findByAuthority("USER");
+        role.ifPresent(authorities::add);
+
         user.setAuthorities(authorities);
         
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -302,7 +307,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // DELETE
-    public void deleteUserById(Long id) {
+    public void deleteUserById(String id) {
         User dbUser = this.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
 
@@ -312,13 +317,13 @@ public class UserServiceImpl implements UserService {
     // Other methods
 
     // Map to DTO with mutual friends count for many users
-    private Page<UserDTO> getUsersWithMutualFriendsCount(Long userId, Page<User> users) {
-        List<Long> userIds = users.getContent().stream().map(User::getId).collect(Collectors.toList());
+    private Page<UserDTO> getUsersWithMutualFriendsCount(String userId, Page<User> users) {
+        List<String> userIds = users.getContent().stream().map(User::getId).collect(Collectors.toList());
         List<Object[]> results = userRepository.countMutualFriendsForUsers(userId, userIds);
 
-        Map<Long, Long> mutualFriendsCount = results.stream()
+        Map<String, Long> mutualFriendsCount = results.stream()
             .collect(Collectors.toMap(
-                row -> (Long) row[0],
+                row -> (String) row[0],
                 row -> (Long) row[1]
             ));
 
@@ -338,7 +343,7 @@ public class UserServiceImpl implements UserService {
                 dto.setFriend(true);
                 dto.setFriendRequestSent(false);
                 
-                Long conversationId = conversationService.getDirectMessageId(userId, user.getId());
+                String conversationId = conversationService.getDirectMessageId(userId, user.getId());
                 dto.setConversationId(conversationId);
             }
 
@@ -364,10 +369,10 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = this.userRepository.findByUsername(loginInput);
         log.info("login input: {}", loginInput);
         if (optionalUser.isEmpty()) {
-            optionalUser = userRepository.findByEmail(loginInput);
+            optionalUser = userRepository.findByEmailAndIsActiveTrue(loginInput);
         }
         if (optionalUser.isEmpty()) {
-            optionalUser = userRepository.findByPhone(loginInput);
+            optionalUser = userRepository.findByPhoneAndIsActiveTrue(loginInput);
         }
         if (optionalUser.isEmpty()) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
@@ -376,19 +381,20 @@ public class UserServiceImpl implements UserService {
     }
 
     public User handleGetUserByLoginInput(String loginInput) {
-        return userRepository.findByUsernameOrEmailOrPhone(loginInput)
+        return userRepository.findByEmailOrPhone(loginInput)
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }    
 
     public User getUserByEmail(String email) {
+        log.info("#register - email " + email);
         return this.userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
 
-    public boolean verifyOtp(Long userId, String otp) {
+    public boolean verifyOtp(String userId, String otp) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
-        if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(), Instant.now()).getSeconds() < 60) {
-            user.setOtp(otp); // Clear OTP after successful verification
+        if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(), Instant.now()).getSeconds() < 300) {
+            user.setOtp(otp);
             userRepository.save(user);
             return true;
         } else if (!user.getOtp().equals(otp)) {

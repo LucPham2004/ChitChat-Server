@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserUpdateLinksRequest {
-    private Long id;
+    private String id;
     
     private String facebook;
     private String twitter;

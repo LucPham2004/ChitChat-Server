@@ -20,7 +20,7 @@ public interface NotificationRepository extends PagingAndSortingRepository<Notif
 
     boolean existsById(Long id);
 
-    Page<Notification> findByUserId(Long userId, Pageable pageable);
+    Page<Notification> findByUserId(String userId, Pageable pageable);
     
     @Query("""
             SELECT COUNT(n) FROM Notification n

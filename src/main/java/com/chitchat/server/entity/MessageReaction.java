@@ -23,7 +23,7 @@ public class MessageReaction {
     private String emoji;
 
     // ManyToOne with User
-    private Long userId;
+    private String userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id")

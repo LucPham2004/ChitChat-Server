@@ -19,7 +19,7 @@ public class MessageReactionController {
 
     // Get messageReaction
     @GetMapping("/get/count/message/{messageId}")
-    public ApiResponse<Integer> getMessageReactionCount(@PathVariable Long messageId) {
+    public ApiResponse<Integer> getMessageReactionCount(@PathVariable String messageId) {
         int messageReactionCount = messageReactionService.getMessageReactionCount(messageId);
         return ApiResponse.<Integer>builder()
             .code(1000)
@@ -29,7 +29,7 @@ public class MessageReactionController {
     }
 
     @GetMapping("/get/all/{messageId}")
-    public ApiResponse<List<MessageReaction>> getMessageReactions(@PathVariable Long messageId) {
+    public ApiResponse<List<MessageReaction>> getMessageReactions(@PathVariable String messageId) {
         List<MessageReaction> messageReactions = messageReactionService.getMessageReactions(messageId);
         return ApiResponse.<List<MessageReaction>>builder()
             .code(1000)
@@ -41,8 +41,8 @@ public class MessageReactionController {
     // Create messageReaction
     @PostMapping
     public ApiResponse<MessageReaction> createMessageReaction(
-            @RequestParam Long userId, 
-            @RequestParam Long messageId,
+            @RequestParam String userId,
+            @RequestParam String messageId,
             @RequestParam String emoji) {
         MessageReaction messageReaction = messageReactionService.createMessageReaction(userId, messageId, emoji);
         return ApiResponse.<MessageReaction>builder()
@@ -54,7 +54,7 @@ public class MessageReactionController {
 
     // Delete messageReaction
     @DeleteMapping("/remove/user/{userId}/message/{messageId}")
-    public ApiResponse<String> deleteMessageReaction(@PathVariable Long userId, @PathVariable Long messageId) {
+    public ApiResponse<String> deleteMessageReaction(@PathVariable String userId, @PathVariable String messageId) {
         messageReactionService.deleteMessageReaction(userId, messageId);
         return ApiResponse.<String>builder()
             .code(1000)

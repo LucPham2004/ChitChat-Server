@@ -12,7 +12,7 @@ import java.util.Set;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class ConversationRequest {
 
-    Long id;
+    String id;
     String name;
     String description;
     String color;
@@ -20,8 +20,8 @@ public class ConversationRequest {
     String avatarPublicId;
     String avatarUrl;
 
-    Set<Long> participantIds;
-    Long ownerId;
+    Set<String> participantIds;
+    String ownerId;
 
     boolean isGroup;
     boolean isRead;

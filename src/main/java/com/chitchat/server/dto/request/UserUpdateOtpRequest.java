@@ -6,7 +6,7 @@ import java.time.Instant;
 
 @Data
 public class UserUpdateOtpRequest {
-    private Long id;
+    private String id;
 
     private String otp;
 

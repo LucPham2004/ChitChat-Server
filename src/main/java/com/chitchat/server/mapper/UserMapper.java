@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -23,16 +24,15 @@ public class UserMapper {
 
     public User toUser(UserCreationRequest request) {
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setUsername(request.getEmail());
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhone(request.getPhone());
         user.setDob(LocalDate.parse(request.getDob()));
-        user.setGender(request.getGender() == "Male" ? Gender.Male 
-            : request.getGender() == "Female" ? Gender.Female 
+        user.setGender(Objects.equals(request.getGender(), "Male") ? Gender.Male
+            : Objects.equals(request.getGender(), "Female") ? Gender.Female
             : Gender.Other);
-        user.setActive(true);
 
         return user;
     };

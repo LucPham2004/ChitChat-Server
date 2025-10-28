@@ -9,27 +9,27 @@ import java.util.Optional;
 
 public interface UserService {
 
-    Page<UserDTO> getUserFriends(Long userId, int pageNum);
+    Page<UserDTO> getUserFriends(String userId, int pageNum);
 
     // Get User's friend requests
-    public Page<UserDTO> getUserFriendRequests(Long userId, int pageNum);
+    public Page<UserDTO> getUserFriendRequests(String userId, int pageNum);
 
     // Get User friends
-    public Page<UserDTO> getSuggestedFriends(Long userId, int pageNum);
+    public Page<UserDTO> getSuggestedFriends(String userId, int pageNum);
 
     // Get mutual friends
-    public Page<UserDTO> getMutualFriends(Long meId, Long youId, int pageNum);
+    public Page<UserDTO> getMutualFriends(String meId, String youId, int pageNum);
 
     // Search users by name
-    public Page<UserDTO> searchUsersByName(Long userId, String name, int pageNum);
+    public Page<UserDTO> searchUsersByName(String userId, String name, int pageNum);
 
     // Search User ids by name
-    public List<Long> searchUserIds(String name, int pageNum);
+    public List<String> searchUserIds(String name, int pageNum);
 
     // Get User by Id
-    public Optional<User> findById(Long id);
+    public Optional<User> findById(String id);
 
-    public User getUser(Long id);
+    public User getUser(String id);
 
     // Get all Users
     public Page<User> getAllUsers(int pageNum, int pageSize);
@@ -51,5 +51,5 @@ public interface UserService {
     public User updateUserOtp(UserUpdateOtpRequest reqUser);
 
     // DELETE
-    public void deleteUserById(Long id);
+    public void deleteUserById(String id);
 }

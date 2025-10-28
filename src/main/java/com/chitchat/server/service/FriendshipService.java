@@ -4,11 +4,11 @@ import com.chitchat.server.entity.Friendship;
 import com.chitchat.server.enums.FriendshipStatus;
 
 public interface FriendshipService {
-    Friendship getFriendStatus(Long requesterId, Long receiverId);
+    Friendship getFriendStatus(String requesterId, String receiverId);
 
-    Friendship sendFriendRequest(Long requesterId, Long receiverId);
+    Friendship sendFriendRequest(String requesterId, String receiverId);
 
-    void deleteFriendShip(Long iselfId, Long otherId);
+    void deleteFriendShip(String iselfId, String otherId);
 
-    Friendship editFriendShipStatus(Long selfId, Long otherId, FriendshipStatus status);
+    Friendship editFriendShipStatus(String selfId, String otherId, FriendshipStatus status);
 }

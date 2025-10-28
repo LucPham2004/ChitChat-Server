@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserUpdateImageRequest {
 
-    private Long id;
+    private String id;
     private String avatarPublicId;
     private String avatarUrl;
     private String coverPhotoPublicId;

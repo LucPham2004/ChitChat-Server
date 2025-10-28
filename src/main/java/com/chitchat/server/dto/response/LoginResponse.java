@@ -22,7 +22,7 @@ public class LoginResponse {
      @NoArgsConstructor
      public static class UserLogin {
 
-          private long id;
+          private String id;
           private String email;
           private String username;
           private String avatarUrl;
@@ -43,14 +43,14 @@ public class LoginResponse {
           private int friendNum;
           private Long mutualFriendsNum;
           
-          public UserLogin(long id, String email, String username, Set<Role> authorities) {
+          public UserLogin(String id, String email, String username, Set<Role> authorities) {
                this.id = id;
                this.email = email;
                this.username = username;
                this.authorities = authorities;
           }
           
-          public UserLogin(long id, String email, String username, String avatarUrl, String firstName, String lastName,
+          public UserLogin(String id, String email, String username, String avatarUrl, String firstName, String lastName,
                 String location, String bio, Set<Role> authorities) {
             this.id = id;
             this.email = email;
@@ -75,7 +75,7 @@ public class LoginResponse {
      @AllArgsConstructor
      @NoArgsConstructor
      public static class UserInsideToken {
-          private long id;
+          private String id;
           private String email;
           private String username;
           private String location;

@@ -13,16 +13,16 @@ import java.util.Optional;
 
 
 @Repository
-public interface ConversationRepository extends PagingAndSortingRepository<Conversation, Long> {
+public interface ConversationRepository extends PagingAndSortingRepository<Conversation, String> {
     Conversation save(Conversation conversation);
 
     void delete(Conversation conversation);
 
-    void deleteById(Long id);
+    void deleteById(String id);
 
-    Optional<Conversation> findById(Long id);
+    Optional<Conversation> findById(String id);
 
-    boolean existsById(Long id);
+    boolean existsById(String id);
 
     @Query("""
             SELECT c FROM Conversation c 
@@ -30,7 +30,7 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
             AND :userBId MEMBER OF c.participantIds 
             AND c.isGroup = false
             """)
-    Optional<Conversation> findDirectMessage(@Param("userAId") Long userAId, @Param("userBId") Long userBId);
+    Optional<Conversation> findDirectMessage(@Param("userAId") String userAId, @Param("userBId") String userBId);
     
     @Query("""
             SELECT c.id FROM Conversation c 
@@ -38,19 +38,19 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
             AND :userBId MEMBER OF c.participantIds 
             AND c.isGroup = false
             """)
-    Long findDirectMessageId(@Param("userAId") Long userAId, @Param("userBId") Long userBId);
+    String findDirectMessageId(@Param("userAId") String userAId, @Param("userBId") String userBId);
 
     @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds")
-    Page<Conversation> findByParticipantIdsContaining(@Param("userId") Long userId, Pageable pageable);
+    Page<Conversation> findByParticipantIdsContaining(@Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds AND EXISTS (SELECT id FROM c.participantIds pid WHERE pid IN :targetUserIds)")
-    Page<Conversation> findByParticipantIdsContainingAndParticipantIn(@Param("userId") Long userId, @Param("targetUserIds") List<Long> targetUserIds, Pageable pageable);
+    Page<Conversation> findByParticipantIdsContainingAndParticipantIn(@Param("userId") String userId, @Param("targetUserIds") List<String> targetUserIds, Pageable pageable);
 
     // Search conversations
     @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds AND c.name IS NOT NULL AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Conversation> findByParticipantIdsContainingAndNameContainingIgnoreCase(@Param("userId") Long userId, String keyword, Pageable pageable);
+    Page<Conversation> findByParticipantIdsContainingAndNameContainingIgnoreCase(@Param("userId") String userId, String keyword, Pageable pageable);
     
-    Page<Conversation> findByOwnerId(Long userId, Pageable pageable);
+    Page<Conversation> findByOwnerId(String userId, Pageable pageable);
 
-    int countByOwnerId(Long userId);
+    int countByOwnerId(String userId);
 }

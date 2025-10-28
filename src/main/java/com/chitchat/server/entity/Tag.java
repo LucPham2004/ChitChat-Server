@@ -29,7 +29,7 @@ public class Tag {
 	private Message message;
 
     // ManyToOne with User
-    private Long userId;
+    private String userId;
     
     @PrePersist
     public void handleBeforeCreate() {

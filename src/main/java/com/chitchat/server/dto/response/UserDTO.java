@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserDTO {
-    Long id;
+    String id;
     String firstName;
     String lastName;
     String location;
@@ -21,5 +21,5 @@ public class UserDTO {
     int friendNum;
     Long mutualFriendsNum;
 
-    Long conversationId;
+    String conversationId;
 }

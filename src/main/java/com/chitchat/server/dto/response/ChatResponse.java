@@ -14,10 +14,10 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class ChatResponse {
-    Long id;
-    Long conversationId;
-    Long senderId;
-    Set<Long> recipientId;
+    String id;
+    String conversationId;
+    String senderId;
+    Set<String> recipientId;
     
     String content;
 

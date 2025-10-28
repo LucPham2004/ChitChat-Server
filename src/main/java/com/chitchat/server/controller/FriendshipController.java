@@ -21,8 +21,8 @@ public class FriendshipController {
 
     @GetMapping("/get/status")
     public ApiResponse<FriendShipResponse> getFriendStatus(
-					@RequestParam Long senderId, 
-					@RequestParam Long recipientId) {
+					@RequestParam String senderId, 
+					@RequestParam String recipientId) {
             var response = this.friendshipService.getFriendStatus(senderId, recipientId);
             if(response == null) {
                 return ApiResponse.<FriendShipResponse>builder()
@@ -40,8 +40,8 @@ public class FriendshipController {
 
     @PostMapping("/request")
     public ApiResponse<FriendShipResponse> sendFriendRequest(
-					@RequestParam Long senderId, 
-					@RequestParam Long recipientId) {
+					@RequestParam String senderId, 
+					@RequestParam String recipientId) {
             var response = this.friendshipService.sendFriendRequest(senderId, recipientId);
             return ApiResponse.<FriendShipResponse>builder()
                             .code(1000)
@@ -53,8 +53,8 @@ public class FriendshipController {
 
     @DeleteMapping("/delete")
     public ApiResponse<Void> deleteFriendShip(
-                    @RequestParam Long senderId, 
-                    @RequestParam Long recipientId) { 
+                    @RequestParam String senderId, 
+                    @RequestParam String recipientId) { 
             this.friendshipService.deleteFriendShip(senderId, recipientId);
             return ApiResponse.<Void>builder()
                             .code(1000)
@@ -64,8 +64,8 @@ public class FriendshipController {
 
     @PutMapping("/update")
     public ApiResponse<FriendShipResponse> editFriendShipStatus(
-					@RequestParam Long senderId, 
-					@RequestParam Long recipientId, 
+					@RequestParam String senderId, 
+					@RequestParam String recipientId, 
 					@RequestParam FriendshipStatus status) {
         	var response = this.friendshipService.editFriendShipStatus(senderId, recipientId, status);
             return ApiResponse.<FriendShipResponse>builder()
@@ -73,6 +73,18 @@ public class FriendshipController {
                             .message("Edit friendship status successfully!")
                             .result(mapper.toFriendShipResponse(response))
                             .build();
+    }
+
+    @PutMapping("/block")
+    public ApiResponse<FriendShipResponse> blockUser(
+            @RequestParam String blockerId,
+            @RequestParam String blockedUserId) {
+        var response = this.friendshipService.editFriendShipStatus(blockerId, blockedUserId, FriendshipStatus.Blocked);
+        return ApiResponse.<FriendShipResponse>builder()
+                .code(1000)
+                .message("Block user successfully!")
+                .result(mapper.toFriendShipResponse(response))
+                .build();
     }
 
 }

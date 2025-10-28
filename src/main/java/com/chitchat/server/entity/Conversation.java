@@ -18,8 +18,8 @@ import java.util.Set;
 @Builder
 public class Conversation {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     private String name;
 
@@ -46,9 +46,11 @@ public class Conversation {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "conversation_participants", 
                      joinColumns = @JoinColumn(name = "conversation_id"))
-    private Set<Long> participantIds;
+    private Set<String> participantIds;
 
-    private Long ownerId;
+    private String ownerId;
+
+    private String blockerId;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "conversation_messages")

@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class ChatParticipants {
-    Long id;
+    String id;
     String username;
     String avatarPublicId;
     String avatarUrl;

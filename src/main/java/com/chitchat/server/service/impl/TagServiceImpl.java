@@ -31,7 +31,7 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findAllOrderByMessageDesc(pageable);
     }
     
-    public Tag createTag(Long userId) {
+    public Tag createTag(String userId) {
         Tag tag = new Tag();
         tag.setUserId(userId);
         return tagRepository.save(tag);

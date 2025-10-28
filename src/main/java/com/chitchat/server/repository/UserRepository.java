@@ -13,28 +13,36 @@ import java.util.Optional;
 
 
 @Repository
-public interface UserRepository extends PagingAndSortingRepository<User, Long> {
+public interface UserRepository extends PagingAndSortingRepository<User, String> {
      User save(User user);
 
      void delete(User user);
 
-     void deleteById(Long id);
+     void deleteById(String id);
 
-     boolean existsById(Long id);
+     boolean existsByIdAndIsActiveTrue(String id);
 
      boolean existsByUsername(String username);
 
-     boolean existsByEmail(String email);
+     boolean existsByEmailAndIsActiveTrue(String email);
 
-     boolean existsByPhone(String phone);
+     boolean existsByPhoneAndIsActiveTrue(String phone);
 
-     Optional<User> findById(long id);
+     Optional<User> findById(String id);
+
+     Optional<User> findByIdAndIsActiveTrue(String id);
 
      Optional<User> findByUsername(String username);
 
-     Optional<User> findByEmail(String username);
+     Optional<User> findByEmail(String email);
 
-     Optional<User> findByPhone(String phoneNumber);
+     Optional<User> findByEmailAndIsActiveTrue(String email);
+
+     Optional<User> findByPhoneAndIsActiveTrue(String phoneNumber);
+
+     Optional<User> findByResetPasswordTokenAndIsActiveTrue(String token);
+
+     Optional<User> findByGoogleId(String googleId);
 
      @Query("""
                SELECT COUNT(u) FROM User u
@@ -45,10 +53,30 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
 
      @Query("""
               SELECT u FROM User u 
+              LEFT JOIN Friendship f ON (f.sender = u OR f.recipient = u)
               WHERE 
+                (
                   LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
                   LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
                   LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))
+                )
+               AND u.isActive = true
+               AND u.id != :userId
+               AND (f.status IS NULL OR f.status != 'Blocked')
+          """)
+     Page<User> searchByAnyName(@Param("userId") String userId, @Param("name") String name, Pageable pageable);
+
+     @Query("""
+              SELECT u FROM User u 
+              LEFT JOIN Friendship f ON (f.sender = u OR f.recipient = u)
+              WHERE 
+                (
+                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
+                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
+                  LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))
+                )
+               AND u.isActive = true
+               AND (f.status IS NULL OR f.status != 'Blocked')
           """)
      Page<User> searchByAnyName(@Param("name") String name, Pageable pageable);
 
@@ -61,8 +89,9 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                WHERE (f.sender.id = :userId OR f.recipient.id = :userId)
                AND f.status = 'Accepted'
                AND u.id != :userId
+               AND u.isActive = true
                """)
-     Page<User> findFriends(@Param("userId") Long userId, Pageable pageable);
+     Page<User> findFriends(@Param("userId") String userId, Pageable pageable);
 
      @Query("""
                SELECT COUNT(u) FROM User u
@@ -71,8 +100,9 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                WHERE (f.sender.id = :userId OR f.recipient.id = :userId)
                AND f.status = 'Accepted'
                AND u.id != :userId
+               AND u.isActive = true
                """)
-     int countFriends(@Param("userId") Long userId);
+     int countFriends(@Param("userId") String userId);
 
      // Find User's friend requests
      @Query("""
@@ -82,8 +112,9 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                WHERE (f.sender.id = :userId OR f.recipient.id = :userId)
                AND f.status = 'Pending'
                AND u.id != :userId
+               AND u.isActive = true
                """)
-     Page<User> findFriendRequests(@Param("userId") Long userId, Pageable pageable);
+     Page<User> findFriendRequests(@Param("userId") String userId, Pageable pageable);
      
      @Query("""
                SELECT COUNT(u) FROM User u
@@ -93,7 +124,7 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                AND f.status = 'Pending'
                AND u.id != :userId
                """)
-     int countFriendRequests(@Param("userId") Long userId);
+     int countFriendRequests(@Param("userId") String userId);
 
      // Find random users: not friends, not those sent reuquest to current user
      @Query("""
@@ -115,14 +146,23 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                          f.sender.id = u.id AND f.recipient.id = :userId
                          AND f.status = 'Pending'
                     )
-               ORDER BY FUNCTION('RAND')
+                    AND NOT EXISTS (
+                    SELECT f FROM Friendship f
+                    WHERE
+                         (
+                              (f.sender.id = :userId AND f.recipient.id = u.id)
+                              OR (f.recipient.id = :userId AND f.sender.id = u.id)
+                         )
+                         AND f.status = 'Blocked'
+                    )
+               AND u.isActive = true
                """)
-     Page<User> findRandomUsers(@Param("userId") Long userId, Pageable pageable);
+     Page<User> findRandomUsers(@Param("userId") String userId, Pageable pageable);
      
 	// Friend suggestion by finding other users having most mutual friends
      @Query("""
                SELECT u FROM User u
-               WHERE u.id <> :userId
+               WHERE u.id != :userId
                AND u.id NOT IN (
                     SELECT f.recipient.id FROM Friendship f WHERE f.sender.id = :userId
                     UNION
@@ -143,10 +183,10 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                          SELECT f8.sender.id FROM Friendship f8 WHERE f8.recipient.id = :userId
                     )
                )
+               AND u.isActive = true
                GROUP BY u.id
-               ORDER BY COUNT(u) DESC, FUNCTION('RAND')
 		""")
-     Page<User> findSuggestedFriends(@Param("userId") Long userId, Pageable pageable);
+     Page<User> findSuggestedFriends(@Param("userId") String userId, Pageable pageable);
 
      // 2 User's mutual friends
 //     @Query("""
@@ -173,29 +213,30 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
 //                              Pageable pageable);
 
      @Query("""
-    SELECT u FROM User u
-    WHERE u.id IN (
-        SELECT
-            CASE
-                WHEN f.sender.id = :userId1 THEN f.recipient.id
-                ELSE f.sender.id
-            END
-        FROM Friendship f
-        WHERE (f.sender.id = :userId1 OR f.recipient.id = :userId1)
-          AND f.status = 'ACCEPTED'
-    )
-    AND u.id IN (
-        SELECT
-            CASE
-                WHEN f.sender.id = :userId2 THEN f.recipient.id
-                ELSE f.sender.id
-            END
-        FROM Friendship f
-        WHERE (f.sender.id = :userId2 OR f.recipient.id = :userId2)
-          AND f.status = 'ACCEPTED'
-    )
-""")
-     Page<User> findMutualFriends(@Param("userId1") Long userId1, @Param("userId2") Long userId2, Pageable pageable);
+         SELECT u FROM User u
+         WHERE u.id IN (
+             SELECT
+                 CASE
+                     WHEN f.sender.id = :userId1 THEN f.recipient.id
+                     ELSE f.sender.id
+                 END
+             FROM Friendship f
+             WHERE (f.sender.id = :userId1 OR f.recipient.id = :userId1)
+               AND f.status = 'Accepted'
+         )
+         AND u.id IN (
+             SELECT
+                 CASE
+                     WHEN f.sender.id = :userId2 THEN f.recipient.id
+                     ELSE f.sender.id
+                 END
+             FROM Friendship f
+             WHERE (f.sender.id = :userId2 OR f.recipient.id = :userId2)
+               AND f.status = 'Accepted'
+         )
+         AND u.isActive = true
+     """)
+     Page<User> findMutualFriends(@Param("userId1") String userId1, @Param("userId2") String userId2, Pageable pageable);
 
      @Query("""
     SELECT u FROM User u
@@ -207,7 +248,7 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
             END
         FROM Friendship f
         WHERE (f.sender.id = :userId1 OR f.recipient.id = :userId1)
-          AND f.status = 'ACCEPTED'
+          AND f.status = 'Accepted'
     )
     AND u.id IN (
         SELECT
@@ -217,10 +258,10 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
             END
         FROM Friendship f
         WHERE (f.sender.id = :userId2 OR f.recipient.id = :userId2)
-          AND f.status = 'ACCEPTED'
+          AND f.status = 'Accepted'
     )
 """)
-     int countMutualFriends(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+     int countMutualFriends(@Param("userId1") String userId1, @Param("userId2") String userId2);
 
      // Count 2 User's mutual friends
 //     @Query("""
@@ -273,7 +314,7 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
                  END AS friend_id
              FROM friendships f
              WHERE (f.sender_id = :userId OR f.recipient_id = :userId)
-               AND f.status = 'ACCEPTED'
+               AND f.status = 'Accepted'
          ) AS u1
          JOIN (
              -- Lặp qua mỗi user khác trong danh sách, lấy bạn của họ
@@ -287,23 +328,28 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long> {
              JOIN friendships f2
                ON (f2.sender_id = u.id OR f2.recipient_id = u.id)
              WHERE u.id IN :otherIds
-               AND f2.status = 'ACCEPTED'
+               AND f2.status = 'Accepted'
+               AND u.is_active = true
          ) AS u2
            ON u1.friend_id = u2.friend_id
          GROUP BY u2.user_id
      """, nativeQuery = true)
           List<Object[]> countMutualFriendsForUsers(
-                  @Param("userId") Long userId,
-                  @Param("otherIds") List<Long> otherIds
+                  @Param("userId") String userId,
+                  @Param("otherIds") List<String> otherIds
           );
 
 
 
 
-     @Query("SELECT u FROM User u WHERE u.username = :loginInput OR u.email = :loginInput OR u.phone = :loginInput")
-     Optional<User> findByUsernameOrEmailOrPhone(@Param("loginInput") String loginInput);
+     @Query("SELECT u FROM User u " +
+             "WHERE u.email = :loginInput OR u.phone = :loginInput ")
+     Optional<User> findByEmailOrPhone(@Param("loginInput") String loginInput);
                
-     @Query(value = "SELECT * FROM users u WHERE u.refresh_token = :token AND (u.email = :emailUsernamePhone OR u.username = :emailUsernamePhone OR u.phone = :emailUsernamePhone)", nativeQuery = true)
+     @Query(value = "SELECT * FROM users u " +
+             "WHERE u.refresh_token = :token " +
+             "AND (u.email = :emailUsernamePhone OR u.username = :emailUsernamePhone OR u.phone = :emailUsernamePhone) " +
+             "AND u.is_active = 1", nativeQuery = true)
      Optional<User> findByRefreshTokenAndEmailOrUsernameOrPhone(@Param("token") String token, 
                @Param("emailUsernamePhone") String emailUsernamePhone);
 }

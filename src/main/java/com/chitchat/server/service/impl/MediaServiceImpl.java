@@ -29,7 +29,7 @@ public class MediaServiceImpl implements MediaService {
 
     static int MEDIAS_PER_PAGE = 20;
 
-    public Media createMedia(String publicId, String url, Long messageId) {
+    public Media createMedia(String publicId, String url, String messageId) {
         Media media = new Media();
 
         media.setUrl(url);
@@ -43,7 +43,7 @@ public class MediaServiceImpl implements MediaService {
         return mediaRepository.findById(publicId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
 
-    public Page<Media> getMediaByMessageId(Long messageId, int pageNum) {
+    public Page<Media> getMediaByMessageId(String messageId, int pageNum) {
         if (!messageRepository.existsById(messageId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -52,7 +52,7 @@ public class MediaServiceImpl implements MediaService {
         return mediaRepository.findByMessageId(messageId, pageable);
     }
     
-    public Page<Media> getMediasAndFilesByConversationId(Long conversationId, int pageNum) {
+    public Page<Media> getMediasAndFilesByConversationId(String conversationId, int pageNum) {
         if (!conversationRepository.existsById(conversationId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -61,7 +61,7 @@ public class MediaServiceImpl implements MediaService {
         return mediaRepository.findByConversationId(conversationId, pageable);
     }
     
-    public Page<Media> getMediasByConversationId(Long conversationId, int pageNum) {
+    public Page<Media> getMediasByConversationId(String conversationId, int pageNum) {
         if (!conversationRepository.existsById(conversationId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }
@@ -70,7 +70,7 @@ public class MediaServiceImpl implements MediaService {
         return mediaRepository.findByConversationIdAndResourceTypeNot(conversationId, type, pageable);
     }
     
-    public Page<Media> getRawFilesByConversationId(Long conversationId, int pageNum) {
+    public Page<Media> getRawFilesByConversationId(String conversationId, int pageNum) {
         if (!conversationRepository.existsById(conversationId)) {
             throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
         }

@@ -45,7 +45,7 @@ import java.util.Objects;
      public ResponseEntity<ApiResponse<String>> handlingValidation(MethodArgumentNotValidException exception) {
          String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
 
-         ErrorCode errorCode = ErrorCode.INVALID_KEY;
+         ErrorCode errorCode;
 
          ApiResponse<String> apiResponse = new ApiResponse<>();
          apiResponse.setMessage(exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));

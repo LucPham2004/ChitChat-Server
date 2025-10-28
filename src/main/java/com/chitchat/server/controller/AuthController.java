@@ -1,8 +1,6 @@
 package com.chitchat.server.controller;
 
-import com.chitchat.server.dto.request.LoginRequest;
-import com.chitchat.server.dto.request.UserCreationRequest;
-import com.chitchat.server.dto.request.UserUpdateOtpRequest;
+import com.chitchat.server.dto.request.*;
 import com.chitchat.server.dto.response.ApiResponse;
 import com.chitchat.server.dto.response.LoginResponse;
 import com.chitchat.server.dto.response.UserResponse;
@@ -12,6 +10,7 @@ import com.chitchat.server.exception.AppException;
 import com.chitchat.server.exception.ErrorCode;
 import com.chitchat.server.mapper.UserMapper;
 import com.chitchat.server.repository.RoleRepository;
+import com.chitchat.server.repository.UserRepository;
 import com.chitchat.server.service.impl.UserServiceImpl;
 import com.chitchat.server.utils.EmailUtil;
 import com.chitchat.server.utils.OtpUtil;
@@ -29,13 +28,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,74 +47,83 @@ public class AuthController {
 
     AuthenticationManagerBuilder authenticationManagerBuilder;
     UserServiceImpl userService;
+    UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
     SecurityUtils securityUtils;
     EmailUtil emailUtil;
+    PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(), loginRequest.getPassword());
-        log.info("authenticationToken: {}", authenticationToken);
+        log.info("#login - start" + loginRequest);
+        try {
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    loginRequest.getEmail(), loginRequest.getPassword());
+            log.info("authenticationToken: {}", authenticationToken);
 
-        // Authenticate the user
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Authenticate the user
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.info("authentication principal: {}", authentication.getPrincipal());
+            log.info("authentication principal: {}", authentication.getPrincipal());
 
-        // Prepare the login response
-        LoginResponse loginResponse = new LoginResponse();
-        User currentUserDB = userService.handleGetUserByLoginInput(loginRequest.getUsername());
+            // Prepare the login response
+            LoginResponse loginResponse = new LoginResponse();
+            User currentUserDB = userService.handleGetUserByLoginInput(loginRequest.getEmail());
 
-        Set<Role> authorities = currentUserDB.getAuthorities().stream()
-				.map(roleRepository::findByAuthority)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toSet());
+            Set<Role> authorities = currentUserDB.getAuthorities();
 
-        LoginResponse.UserLogin userLogin = new LoginResponse.UserLogin(
-                currentUserDB.getId(),
-                currentUserDB.getEmail(),
-                currentUserDB.getUsername(),
-                currentUserDB.getAvatarUrl(),
-                currentUserDB.getFirstName(),
-                currentUserDB.getLastName(),
-                currentUserDB.getLocation(),
-                currentUserDB.getBio(),
-                authorities);
-        loginResponse.setUser(userLogin);
+            LoginResponse.UserLogin userLogin = new LoginResponse.UserLogin(
+                    currentUserDB.getId(),
+                    currentUserDB.getEmail(),
+                    currentUserDB.getUsername(),
+                    currentUserDB.getAvatarUrl(),
+                    currentUserDB.getFirstName(),
+                    currentUserDB.getLastName(),
+                    currentUserDB.getLocation(),
+                    currentUserDB.getBio(),
+                    authorities);
+            loginResponse.setUser(userLogin);
 
-        // Generate tokens
-        String access_token = securityUtils.createAccessToken(authentication.getName(), loginResponse);
-        loginResponse.setAccess_token(access_token);
+            // Generate tokens
+            String access_token = securityUtils.createAccessToken(authentication.getName(), loginResponse);
+            loginResponse.setAccess_token(access_token);
 
-        String refresh_token = securityUtils.createRefreshToken(loginRequest.getUsername(), loginResponse);
+            String refresh_token = securityUtils.createRefreshToken(loginRequest.getEmail(), loginResponse);
 
-        // Update refresh token for the user in the database
-        userService.updateUserToken(refresh_token, loginRequest.getUsername());
+            // Update refresh token for the user in the database
+            userService.updateUserToken(refresh_token, loginRequest.getEmail());
 
-        // Set refresh token as an HTTP-only cookie
-        ResponseCookie resCookie = ResponseCookie.from("refresh_token", refresh_token)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(securityUtils.refreshTokenExpiration * 86400)
-                .build();
+            // Set refresh token as an HTTP-only cookie
+            ResponseCookie resCookie = ResponseCookie.from("refresh_token", refresh_token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(securityUtils.refreshTokenExpiration * 86400)
+                    .build();
 
-        // Create the ApiResponse
-        ApiResponse<LoginResponse> apiResponse = ApiResponse.<LoginResponse>builder()
-                .code(1000)
-                .message("Login successfully")
-                .result(loginResponse)
-                .build();
+            // Create the ApiResponse
+            ApiResponse<LoginResponse> apiResponse = ApiResponse.<LoginResponse>builder()
+                    .code(1000)
+                    .message("Login successfully")
+                    .result(loginResponse)
+                    .build();
 
-        // Build the response with the body and headers
+            // Build the response with the body and headers
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, resCookie.toString()) // Set the cookie in the response header
+                    .body(apiResponse); // Return the body with the API response
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, resCookie.toString()) // Set the cookie in the response header
-                .body(apiResponse); // Return the body with the API response
+                .body(ApiResponse.<LoginResponse>builder()
+                        .code(ErrorCode.ENTITY_NOT_EXISTED_OR_NOT_ACTIVE.getCode())
+                        .message(ErrorCode.ENTITY_NOT_EXISTED_OR_NOT_ACTIVE.getMessage())
+                        .build());
     }
 
     @GetMapping("/account")
@@ -127,11 +137,7 @@ public class AuthController {
         LoginResponse.UserLogin userLogin = new LoginResponse.UserLogin();
         LoginResponse.UserGetAccount userGetAccount = new LoginResponse.UserGetAccount();
 
-        Set<Role> authorities = currentUserDB.getAuthorities().stream()
-				.map(roleRepository::findByAuthority)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toSet());
+        Set<Role> authorities = currentUserDB.getAuthorities();
 
         userLogin.setId(currentUserDB.getId());
         userLogin.setEmail(currentUserDB.getEmail());
@@ -164,11 +170,7 @@ public class AuthController {
         // issue new token / set refresh token as cookies
         LoginResponse res = new LoginResponse();
 
-        Set<Role> authorities = currentUser.getAuthorities().stream()
-				.map(roleRepository::findByAuthority)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toSet());
+        Set<Role> authorities = currentUser.getAuthorities();
 
         LoginResponse.UserLogin userLogin = new LoginResponse.UserLogin(
                 currentUser.getId(),
@@ -244,40 +246,53 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<UserResponse> register(@Valid @RequestBody UserCreationRequest reqUser) {
-        User resUser = userService.createUser(reqUser);
+        log.info("#register - start " + reqUser);
+        String otp = OtpUtil.generateOtp(6);
 
-		// UserUpdateOtpRequest updateUser = new UserUpdateOtpRequest();
+        Optional<User> userOptional = userRepository.findByEmail(reqUser.getEmail());
+        User user;
+        log.info("#register - user " + userOptional);
+        if(userOptional.isEmpty()) {
+            user = userService.createUser(reqUser);
+        } else if(userOptional.get().isActive()) {
+            throw new AppException(ErrorCode.ACCOUNT_EXISTED);
+        } else {
+            user = userOptional.get();
+        }
 
-        // String otp = OtpUtil.generateOtp(6);
-        // updateUser.setOtp(otp);
-        // updateUser.setOtpGeneratedTime(Instant.now());
+        try {
+            emailUtil.sendOtpEmail(reqUser.getEmail(), otp);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.ERROR_EMAIL);
+        }
 
-        // try {
-        //     emailUtil.sendOtpEmail(reqUser.getEmail(), otp);
+        user.setOtp(otp);
+        user.setOtpGeneratedTime(Instant.now());
 
-        // } catch (MessagingException e) {
-        //     throw new AppException(ErrorCode.ERROR_EMAIL);
-        // }
-
-        // userServiceClient.updateUserOtp(updateUser);
+        userRepository.save(user);
 
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
                 .message("register successfully!")
-                .result(userMapper.toUserResponse(resUser))
+                .result(userMapper.toUserResponse(user))
                 .build();
     }
 
     @PostMapping("/verify-otp")
-    public ApiResponse<Void> verifyOtp(@RequestParam String email, @RequestParam String otp) {
-        User user = userService.handleGetUserByLoginInput(email);
+    public ApiResponse<Void> verifyOtp(@RequestBody UserCreationRequest reqUser) {
+        log.info("#verify-otp - start " + reqUser);
+        User user = userService.getUserByEmail(reqUser.getEmail());
+        log.info("#verify-otp - user " + user);
 
-        boolean isVerified = userService.verifyOtp(user.getId(), otp);
+        log.info("#register - isVerified start");
+        boolean isVerified = userService.verifyOtp(user.getId(), reqUser.getOtp());
+        log.info("#register - isVerified end " + isVerified);
         if (isVerified) {
-			UserUpdateOtpRequest updateUser = new UserUpdateOtpRequest();
+            user.setOtp(reqUser.getOtp());
+            user.setOtpGeneratedTime(Instant.now());
+            user.setActive(true);
 
-            updateUser.setActive(true);
-            userService.updateUserOtp(updateUser);
+            userRepository.save(user);
 
             return ApiResponse.<Void>builder()
                     .code(1000)
@@ -291,10 +306,74 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("#forgot-password - start " + request);
+        User user = userService.getUserByEmail(request.getEmail());
+
+        if (user == null) {
+            throw new AppException(ErrorCode.ENTITY_NOT_EXISTED);
+        }
+
+//        if (user.getGoogleId() != null) {
+//            throw new AppException(ErrorCode.UNAUTHENTICATED);
+//        }
+
+        // Generate reset token
+        String resetToken = UUID.randomUUID().toString();
+        user.setResetPasswordToken(resetToken);
+        user.setResetPasswordTokenExpiry(Instant.now().plus(Duration.ofMinutes(15)));
+        userRepository.save(user);
+
+        // Send reset email
+        try {
+            String resetUrl = "http://localhost:5173/reset-password?token=" + resetToken;
+            emailUtil.sendResetPasswordEmail(user.getEmail(), resetUrl);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.ERROR_EMAIL);
+        }
+
+        return ApiResponse.<String>builder()
+                .code(1000)
+                .message("Reset password link sent to your email")
+                .result("Check your email for reset password link")
+                .build();
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info("#reset-password - start " + request);
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        Optional<User> userOpt = userRepository.findByResetPasswordTokenAndIsActiveTrue(request.getToken());
+        if (userOpt.isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        User user = userOpt.get();
+
+        // Check if token is expired
+        if (user.getResetPasswordTokenExpiry().isBefore(Instant.now())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+        userRepository.save(user);
+
+        return ApiResponse.<Void>builder()
+                .code(1000)
+                .message("Password reset successfully")
+                .build();
+    }
+
     @PostMapping("/regenerate-otp")
     public ApiResponse<String> regenerateOtp(@RequestParam String email) {
-        // UserAuthResponse user = userServiceClient.handleGetUserByUsernameOrEmailOrPhone(email)
-		// 	.getResult();
+        User user = userService.getUserByEmail(email);
 
         String otp = OtpUtil.generateOtp(6);
         try {
@@ -303,11 +382,9 @@ public class AuthController {
             throw new AppException(ErrorCode.ERROR_EMAIL);
         }
 
-		UserUpdateOtpRequest updateUser = new UserUpdateOtpRequest();
-
-        updateUser.setOtp(otp);
-        updateUser.setOtpGeneratedTime(Instant.now());
-        userService.updateUserOtp(updateUser);
+        user.setOtp(otp);
+        user.setOtpGeneratedTime(Instant.now());
+        userRepository.save(user);
         return ApiResponse.<String>builder()
                 .code(1000)
                 .message("New OTP sent to email.")
