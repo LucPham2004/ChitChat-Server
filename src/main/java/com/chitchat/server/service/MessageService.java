@@ -17,8 +17,6 @@ public interface MessageService {
     // Send Message
     void sendMessage(ChatRequest chatRequest);
 
-    void handleCallRequest(ChatRequest request);
-
     void handleTypingStatus(ChatRequest request);
 
     // Delete Message

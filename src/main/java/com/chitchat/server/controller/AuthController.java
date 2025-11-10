@@ -121,8 +121,8 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .body(ApiResponse.<LoginResponse>builder()
-                        .code(ErrorCode.ENTITY_NOT_EXISTED_OR_NOT_ACTIVE.getCode())
-                        .message(ErrorCode.ENTITY_NOT_EXISTED_OR_NOT_ACTIVE.getMessage())
+                        .code(ErrorCode.CREDENTIAL_NOT_MATCH.getCode())
+                        .message(ErrorCode.CREDENTIAL_NOT_MATCH.getMessage())
                         .build());
     }
 

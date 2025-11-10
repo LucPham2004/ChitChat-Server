@@ -64,6 +64,10 @@ public class MessageMapper {
         response.setSenderId(message.getSenderId());
         response.setRecipientId(message.getReceiverIds());
         response.setIsRead(false);
+        response.setType(message.getMessageType());
+        response.setCallType(message.getCallType());
+        response.setCallStatus(message.getCallStatus());
+        response.setCallDuration(message.getCallDuration());
         response.setCreatedAt(message.getCreatedAt());
         response.setUpdatedAt(message.getUpdatedAt());
 

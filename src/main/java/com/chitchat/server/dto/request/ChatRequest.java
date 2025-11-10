@@ -32,5 +32,9 @@ public class ChatRequest {
     String type; // MESSAGE, CALL_REQUEST, CALL_ACCEPT, CALL_REJECT, CALL_END, TYPING_START, TYPING_STOP
     String callType; // video, audio
     String senderName; // For notifications
+
+    String callStatus;
+    Long callDuration;
+
     Long timestamp;
 }

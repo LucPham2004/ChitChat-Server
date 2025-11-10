@@ -30,6 +30,11 @@ public class ChatResponse {
     Long[] widths;
     String[] resourceTypes;
 
+    String type;
+    String callType;
+    String callStatus;
+    Long callDuration;
+
     Boolean isRead;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

@@ -42,7 +42,10 @@ public class Message {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Relationships
+    // === Các trường dành cho cuộc gọi ===
+    private String callType;        // "audio" | "video"
+    private String callStatus;      // "missed", "rejected", "ended", "accepted"
+    private Long callDuration;
 
     // ManyToOne with User
     private String senderId;

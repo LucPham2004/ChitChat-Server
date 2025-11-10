@@ -360,6 +360,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public User getUserByRefreshTokenAndEmailOrUsernameOrPhone(String token, String emailUsernamePhone) {
+        log.info("token " + token + " email: " + emailUsernamePhone);
         return this.userRepository.findByRefreshTokenAndEmailOrUsernameOrPhone(token, emailUsernamePhone)
                 .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
@@ -386,7 +387,7 @@ public class UserServiceImpl implements UserService {
     }    
 
     public User getUserByEmail(String email) {
-        log.info("#register - email " + email);
+        log.info("#getUserByEmail - email " + email);
         return this.userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
     }
 

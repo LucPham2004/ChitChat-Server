@@ -98,9 +98,6 @@ public class MessageController {
                 case "message":
                     service.sendMessage(request);
                     break;
-                case "call":
-                    service.handleCallRequest(request);
-                    break;
                 case "TYPING_START":
                 case "TYPING_STOP":
                     service.handleTypingStatus(request);

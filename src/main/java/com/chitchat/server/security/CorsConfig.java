@@ -13,8 +13,18 @@ package com.chitchat.server.security;
       @Bean
       public CorsConfigurationSource corsConfigurationSource() {
            CorsConfiguration configuration = new CorsConfiguration();
-           configuration.setAllowedOrigins(Arrays.asList("http://localhost:5172", "http://localhost:5173", "http://127.0.0.1:5173"));
-           configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed methods
+           configuration.setAllowedOrigins(Arrays.asList(
+                   "http://localhost:5172",
+                   "http://localhost:5173",
+                   "http://127.0.0.1:5173",
+
+                   "https://servertest.top",
+                   "https://www.servertest.top",
+
+                   "https://chitchat.pro.vn",
+                   "https://www.chitchat.pro.vn"
+           ));
+           configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Allowed methods
            configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "x-no-retry"));
            configuration.setAllowCredentials(true);
            configuration.setMaxAge(3600L);

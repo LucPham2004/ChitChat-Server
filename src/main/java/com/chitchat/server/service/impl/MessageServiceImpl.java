@@ -95,28 +95,6 @@ public class MessageServiceImpl implements MessageService {
         handleMessageMedia(chatRequest, message, conversation);
     }
 
-    // Handle call requests
-    public void handleCallRequest(ChatRequest request) {
-        // Save call request as a special message type
-        Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
-
-        Message callMessage = Message.builder()
-                .conversation(conversation)
-                .senderId(request.getSenderId())
-                .content("📞 " + (request.getCallType().equals("video") ? "Video" : "Audio") + " call")
-                .messageType("CALL_REQUEST")
-                .build();
-
-        messageRepository.save(callMessage);
-        request.setId(callMessage.getId());
-
-        // Send to all participants
-        for (String participantId : conversation.getParticipantIds()) {
-            template.convertAndSend("/topic/user/" + participantId, request);
-        }
-    }
-
     // Handle typing status
     public void handleTypingStatus(ChatRequest request) {
         // Don't save typing status to database, just broadcast
