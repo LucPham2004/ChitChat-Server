@@ -151,6 +151,11 @@ public class UserServiceImpl implements UserService {
         }
         User user = userMapper.toUser(request);
 
+        user.setFullName(String.join(" ",
+                Optional.ofNullable(request.getFirstName()).orElse(""),
+                Optional.ofNullable(request.getLastName()).orElse("")
+        ).trim());
+
         Set<Role> authorities = new HashSet<>();
 
         Optional<Role> role = roleRepository.findByAuthority("USER");

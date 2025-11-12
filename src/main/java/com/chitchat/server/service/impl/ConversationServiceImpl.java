@@ -113,12 +113,21 @@ public class ConversationServiceImpl implements ConversationService {
 
         for(String userId: conversation.getParticipantIds()) {
             User user = userRepository.findByIdAndIsActiveTrue(userId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
-            
+
+            if(user.getFullName() == null || user.getFullName().isEmpty()) {
+                user.setFullName(String.join(" ",
+                        Optional.ofNullable(user.getFirstName()).orElse(""),
+                        Optional.ofNullable(user.getLastName()).orElse("")
+                ).trim());
+                userRepository.save(user);
+            }
+
             ChatParticipants participant = ChatParticipants.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .avatarPublicId(user.getAvatarPublicId())
                 .avatarUrl(user.getAvatarUrl())
+                .fullName(user.getFullName())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .build();

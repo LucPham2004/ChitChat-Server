@@ -38,7 +38,7 @@ public class MessageServiceImpl implements MessageService {
     MediaRepository mediaRepository;
     SimpMessagingTemplate template;
 
-    static int MESSAGES_PER_PAGE = 20;
+    static int MESSAGES_PER_PAGE = 30;
 
     // Get messages
 
@@ -87,6 +87,14 @@ public class MessageServiceImpl implements MessageService {
         messageRepository.save(message);
 
         chatRequest.setId(message.getId());
+        chatRequest.setCreatedAt(message.getCreatedAt());
+
+        if (chatRequest.getReplyToId() != null) {
+            Message repliedMessage = messageRepository.findById(chatRequest.getReplyToId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
+            message.setReplyTo(repliedMessage);
+            chatRequest.setReplyTo(messageMapper.toResponse(repliedMessage));
+        }
 
         for(String participantId: conversation.getParticipantIds()) {
             template.convertAndSend("/topic/user/" + participantId, chatRequest);

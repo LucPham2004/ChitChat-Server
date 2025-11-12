@@ -13,6 +13,7 @@ public class ChatParticipants {
     String username;
     String avatarPublicId;
     String avatarUrl;
+    String fullName;
     String firstName;
     String lastName;
 }

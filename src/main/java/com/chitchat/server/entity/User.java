@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @Column(name = "first_name")
     private String firstName;
 

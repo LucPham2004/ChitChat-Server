@@ -97,7 +97,7 @@ public class ConversationMapper {
         }
 
         // Lấy danh sách avatarUrls
-        String defaultAvatar = "/user_default.avif";
+        String defaultAvatar = "/images/user_default.avif";
         Set<String> participants = conversation.getParticipantIds();
         List<String> avatarUrls = new ArrayList<>();
 
@@ -177,7 +177,7 @@ public class ConversationMapper {
         }
 
         // Lấy danh sách avatarUrls
-        String defaultAvatar = "/user_default.avif";
+        String defaultAvatar = "/images/user_default.avif";
         Set<String> participants = conversation.getParticipantIds();
         List<String> avatarUrls = new ArrayList<>();
 

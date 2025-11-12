@@ -70,7 +70,7 @@ public class CallController {
 
         Message message = Message.builder()
                 .conversation(conversation)
-                .senderId(payload.getFrom())
+                .senderId(payload.getTo())
                 .receiverIds(receiverIds)
                 .content(content)
                 .messageType("CALL")

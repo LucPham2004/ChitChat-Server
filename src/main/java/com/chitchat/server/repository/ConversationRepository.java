@@ -25,22 +25,26 @@ public interface ConversationRepository extends PagingAndSortingRepository<Conve
     boolean existsById(String id);
 
     @Query("""
-            SELECT c FROM Conversation c 
-            WHERE :userAId MEMBER OF c.participantIds 
-            AND :userBId MEMBER OF c.participantIds 
+            SELECT c FROM Conversation c
+            WHERE :userAId MEMBER OF c.participantIds
+            AND :userBId MEMBER OF c.participantIds
             AND c.isGroup = false
             """)
     Optional<Conversation> findDirectMessage(@Param("userAId") String userAId, @Param("userBId") String userBId);
     
     @Query("""
-            SELECT c.id FROM Conversation c 
-            WHERE :userAId MEMBER OF c.participantIds 
-            AND :userBId MEMBER OF c.participantIds 
+            SELECT c.id FROM Conversation c
+            WHERE :userAId MEMBER OF c.participantIds
+            AND :userBId MEMBER OF c.participantIds
             AND c.isGroup = false
             """)
     String findDirectMessageId(@Param("userAId") String userAId, @Param("userBId") String userBId);
 
-    @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds")
+    @Query("""
+            SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds
+            AND c.messages IS NOT EMPTY
+            ORDER BY (SELECT MAX(m.createdAt) FROM Message m WHERE m.conversation = c) DESC
+            """)
     Page<Conversation> findByParticipantIdsContaining(@Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participantIds AND EXISTS (SELECT id FROM c.participantIds pid WHERE pid IN :targetUserIds)")

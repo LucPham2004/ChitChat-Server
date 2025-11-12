@@ -22,6 +22,7 @@ public class UserAuthResponse {
 
      String phone;
      String avatarUrl;
+     String fullName;
      String firstName;
      String lastName;
      String location;

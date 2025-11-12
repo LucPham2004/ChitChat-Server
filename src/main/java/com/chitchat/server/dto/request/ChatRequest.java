@@ -1,9 +1,12 @@
 package com.chitchat.server.dto.request;
 
+import com.chitchat.server.dto.response.ChatResponse;
+import com.chitchat.server.entity.Message;
 import com.chitchat.server.entity.MessageReaction;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -37,4 +40,8 @@ public class ChatRequest {
     Long callDuration;
 
     Long timestamp;
+    LocalDateTime createdAt;
+
+    String ReplyToId;
+    ChatResponse ReplyTo;
 }

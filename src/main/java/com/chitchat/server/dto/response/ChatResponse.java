@@ -38,4 +38,7 @@ public class ChatResponse {
     Boolean isRead;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+
+    String ReplyToId;
+    ChatResponse ReplyTo;
 }

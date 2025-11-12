@@ -64,6 +64,59 @@ public class MessageMapper {
         response.setSenderId(message.getSenderId());
         response.setRecipientId(message.getReceiverIds());
         response.setIsRead(false);
+        if(message.getReplyTo() != null) {
+            Message reply = message.getReplyTo();
+
+            ChatResponse replyResponse = new ChatResponse();
+            replyResponse.setId(reply.getId());
+            replyResponse.setContent(reply.getContent());
+            replyResponse.setSenderId(reply.getSenderId());
+            replyResponse.setConversationId(reply.getConversation().getId());
+            replyResponse.setSenderId(reply.getSenderId());
+
+            Set<Media> medias = reply.getMedias();
+            if (medias != null && !medias.isEmpty()) {
+                String[] publicIds = medias.stream()
+                        .map(Media::getPublicId)
+                        .toArray(String[]::new);
+
+                String[] urls = medias.stream()
+                        .map(Media::getUrl)
+                        .toArray(String[]::new);
+
+                String[] fileNames = medias.stream()
+                        .map(Media::getFileName)
+                        .toArray(String[]::new);
+
+                Long[] heights = medias.stream()
+                        .map(Media::getHeight)
+                        .toArray(Long[]::new);
+
+                Long[] widths = medias.stream()
+                        .map(Media::getWidth)
+                        .toArray(Long[]::new);
+
+                String[] resourceTypes = medias.stream()
+                        .map(Media::getResourceType)
+                        .toArray(String[]::new);
+
+                replyResponse.setPublicIds(publicIds);
+                replyResponse.setUrls(urls);
+                replyResponse.setFileNames(fileNames);
+                replyResponse.setHeights(heights);
+                replyResponse.setWidths(widths);
+                replyResponse.setResourceTypes(resourceTypes);
+            }
+            replyResponse.setType(reply.getMessageType());
+            replyResponse.setCallType(reply.getCallType());
+            replyResponse.setCallStatus(reply.getCallStatus());
+            replyResponse.setCallDuration(reply.getCallDuration());
+            replyResponse.setCreatedAt(reply.getCreatedAt());
+            replyResponse.setUpdatedAt(reply.getUpdatedAt());
+
+            response.setReplyTo(replyResponse);
+            response.setReplyToId(reply.getId());
+        }
         response.setType(message.getMessageType());
         response.setCallType(message.getCallType());
         response.setCallStatus(message.getCallStatus());

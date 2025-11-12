@@ -2,6 +2,8 @@ package com.chitchat.server.entity;
 
 import com.chitchat.server.enums.MessageStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +11,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -57,7 +60,7 @@ public class Message {
     @JsonBackReference(value = "conversation_messages")
     private Conversation conversation;
 
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference(value = "message_medias")
     private Set<Media> medias;
 
@@ -68,7 +71,16 @@ public class Message {
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "message_tags")
     private Set<Tag> tags;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Message replyTo;
+
+    @OneToMany(mappedBy = "replyTo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Message> repliedMessages = new HashSet<>();
+
     @PrePersist
     public void handleBeforeCreate() {
         this.createdAt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();

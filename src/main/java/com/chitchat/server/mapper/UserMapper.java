@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -44,11 +45,19 @@ public class UserMapper {
         userResponse.setEmail(user.getEmail());
         userResponse.setAuthorities(user.getAuthorities());
 
+        if(user.getFullName() == null || user.getFullName().isEmpty()) {
+            user.setFullName(String.join(" ",
+                    Optional.ofNullable(user.getFirstName()).orElse(""),
+                    Optional.ofNullable(user.getLastName()).orElse("")
+            ).trim());
+            userRepository.save(user);
+        }
+        userResponse.setFullName(user.getFullName());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setPhone(user.getPhone());
 
-        userResponse.setAvatarUrl(user.getAvatarUrl() != null ? user.getAvatarUrl() : "/user_default.avif");
+        userResponse.setAvatarUrl(user.getAvatarUrl() != null ? user.getAvatarUrl() : "/images/user_default.avif");
         userResponse.setAvatarPublicId(user.getAvatarPublicId());
         userResponse.setCoverPhotoUrl(user.getCoverPhotoUrl() != null ? user.getCoverPhotoUrl() : "https://images.unsplash.com/photo-1501594907352-04cda38ebc29");
         userResponse.setCoverPhotoPublicId(user.getCoverPhotoPublicId());
@@ -77,8 +86,16 @@ public class UserMapper {
     public UserDTO toUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
-        userDTO.setAvatarUrl(user.getAvatarUrl() != null ? user.getAvatarUrl() : "/user_default.avif");
+        userDTO.setAvatarUrl(user.getAvatarUrl() != null ? user.getAvatarUrl() : "/images/user_default.avif");
         userDTO.setAvatarPublicId(user.getAvatarPublicId());
+        if(user.getFullName() == null || user.getFullName().isEmpty()) {
+            user.setFullName(String.join(" ",
+                    Optional.ofNullable(user.getFirstName()).orElse(""),
+                    Optional.ofNullable(user.getLastName()).orElse("")
+            ).trim());
+            userRepository.save(user);
+        }
+        userDTO.setFullName(user.getFullName());
         userDTO.setFirstName(user.getFirstName());
         userDTO.setLastName(user.getLastName());
         userDTO.setLocation(user.getLocation());
@@ -97,6 +114,14 @@ public class UserMapper {
         userResponse.setPhone(user.getPhone());
         userResponse.setPassword(user.getPassword());
         userResponse.setAuthorities(user.getAuthorities());
+        if(user.getFullName() == null || user.getFullName().isEmpty()) {
+            user.setFullName(String.join(" ",
+                    Optional.ofNullable(user.getFirstName()).orElse(""),
+                    Optional.ofNullable(user.getLastName()).orElse("")
+            ).trim());
+            userRepository.save(user);
+        }
+        userResponse.setFullName(user.getFullName());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
         userResponse.setLocation(user.getLocation());
