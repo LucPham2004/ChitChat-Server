@@ -46,9 +46,11 @@ public class CallController {
         forwardToUser(payload.getTo(), Map.of(
                 "type", "CALL_REQUEST",
                 "from", payload.getFrom(),
+                "to", payload.getTo(),
                 "fromName", payload.getFromName(),
                 "callType", payload.getCallType()
         ));
+        log.info("call type: " + payload.getCallType());
 
     }
 
@@ -107,12 +109,22 @@ public class CallController {
 
     @MessageMapping("/call/hangup")
     public void handleHangup(CallAction payload) {
-        forwardToUser(payload.getTo(), Map.of(
+        forwardToUser(payload.getFrom(), Map.of(
                 "type", "HANGUP",
                 "from", payload.getFrom(),
+                "to", payload.getTo(),
                 "duration", payload.getDuration(),
                 "status", payload.getStatus()
         ));
+        forwardToUser(payload.getTo(), Map.of(
+                "type", "HANGUP",
+                "from", payload.getFrom(),
+                "to", payload.getTo(),
+                "duration", payload.getDuration(),
+                "status", payload.getStatus()
+        ));
+
+        log.info("payload: " + payload);
 
         Conversation conversation = conversationRepository.findDirectMessage(payload.getFrom(), payload.getTo()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED));
 
