@@ -88,14 +88,13 @@ public class FriendshipController {
     }
 
     @PutMapping("/unblock")
-    public ApiResponse<FriendShipResponse> unblockUser(
+    public ApiResponse<Void> unblockUser(
             @RequestParam String blockerId,
             @RequestParam String blockedUserId) {
-        var response = this.friendshipService.editFriendShipStatus(blockerId, blockedUserId, FriendshipStatus.Accepted);
-        return ApiResponse.<FriendShipResponse>builder()
+        friendshipService.unblockUser(blockerId, blockedUserId);
+        return ApiResponse.<Void>builder()
                 .code(1000)
                 .message("Unblock user successfully!")
-                .result(mapper.toFriendShipResponse(response))
                 .build();
     }
 

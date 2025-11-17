@@ -73,7 +73,6 @@ public class CallController {
         Message message = Message.builder()
                 .conversation(conversation)
                 .senderId(payload.getTo())
-                .receiverIds(receiverIds)
                 .content(content)
                 .messageType("CALL")
                 .callDuration(payload.getDuration())
@@ -84,6 +83,9 @@ public class CallController {
                 .reactions(new HashSet<>())
                 .tags(new HashSet<>())
                 .build();
+
+        message.addReceiver(payload.getFrom());
+        message.addReceiver(payload.getTo());
 
         messageRepository.save(message);
 
@@ -137,7 +139,6 @@ public class CallController {
         Message message = Message.builder()
                 .conversation(conversation)
                 .senderId(payload.getFrom())
-                .receiverIds(receiverIds)
                 .content(content)
                 .messageType("CALL")
                 .callDuration(payload.getDuration())
@@ -148,6 +149,9 @@ public class CallController {
                 .reactions(new HashSet<>())
                 .tags(new HashSet<>())
                 .build();
+
+        message.addReceiver(payload.getFrom());
+        message.addReceiver(payload.getTo());
 
         messageRepository.save(message);
 

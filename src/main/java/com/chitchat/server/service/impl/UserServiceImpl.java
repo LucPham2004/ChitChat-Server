@@ -108,6 +108,13 @@ public class UserServiceImpl implements UserService {
 
         return getUsersWithMutualFriendsCount(userId, users);
     }
+    public Page<UserDTO> searchFriendsByName(String userId, String name, int pageNum) {
+        Pageable pageable = PageRequest.of(pageNum, USERS_PER_PAGE);
+
+        Page<User> users = userRepository.searchFriendsByName(userId, name, pageable);
+
+        return getUsersWithMutualFriendsCount(userId, users);
+    }
 
     // Search User ids by name
     public List<String> searchUserIds(String name, int pageNum) {

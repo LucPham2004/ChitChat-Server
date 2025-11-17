@@ -52,12 +52,12 @@ public interface UserRepository extends PagingAndSortingRepository<User, String>
      Page<User> findByFirstNameContainingOrLastNameContainingIgnoreCase(String firstName, String lastName, Pageable pageable);
 
      @Query("""
-              SELECT u FROM User u 
+              SELECT u FROM User u
               LEFT JOIN Friendship f ON (f.sender = u OR f.recipient = u)
-              WHERE 
+              WHERE
                 (
-                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
-                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
+                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR
+                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR
                   LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))
                 )
                AND u.isActive = true
@@ -67,12 +67,28 @@ public interface UserRepository extends PagingAndSortingRepository<User, String>
      Page<User> searchByAnyName(@Param("userId") String userId, @Param("name") String name, Pageable pageable);
 
      @Query("""
-              SELECT u FROM User u 
+              SELECT u FROM User u
+               JOIN Friendship f
+               ON (f.sender = u OR f.recipient = u)
+               WHERE (f.sender.id = :userId OR f.recipient.id = :userId)
+               AND (
+                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR
+                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR
+                  LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))
+                )
+               AND f.status = 'Accepted'
+               AND u.id != :userId
+               AND u.isActive = true
+          """)
+     Page<User> searchFriendsByName(@Param("userId") String userId, @Param("name") String name, Pageable pageable);
+
+     @Query("""
+              SELECT u FROM User u
               LEFT JOIN Friendship f ON (f.sender = u OR f.recipient = u)
-              WHERE 
+              WHERE
                 (
-                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
-                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR 
+                  LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR
+                  LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%')) OR
                   LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))
                 )
                AND u.isActive = true
@@ -169,14 +185,14 @@ public interface UserRepository extends PagingAndSortingRepository<User, String>
                     SELECT f2.sender.id FROM Friendship f2 WHERE f2.recipient.id = :userId
                )
                AND u.id IN (
-                    SELECT f3.recipient.id FROM Friendship f3 
+                    SELECT f3.recipient.id FROM Friendship f3
                     WHERE f3.sender.id IN (
                          SELECT f4.recipient.id FROM Friendship f4 WHERE f4.sender.id = :userId
                          UNION
                          SELECT f5.sender.id FROM Friendship f5 WHERE f5.recipient.id = :userId
                     )
                     UNION
-                    SELECT f6.sender.id FROM Friendship f6 
+                    SELECT f6.sender.id FROM Friendship f6
                     WHERE f6.recipient.id IN (
                          SELECT f7.recipient.id FROM Friendship f7 WHERE f7.sender.id = :userId
                          UNION

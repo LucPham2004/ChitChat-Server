@@ -203,6 +203,20 @@ public class UserController {
                                 .build();
         }
 
+        // Get User's friends
+        @GetMapping("/search/friends")
+        public ApiResponse<Page<UserDTO>> searchFriendsByName(
+                @RequestParam String userId,
+                @RequestParam String name,
+                @RequestParam(defaultValue = "0") int pageNum) {
+                var friends = this.userService.searchFriendsByName(userId, name, pageNum);
+                return ApiResponse.<Page<UserDTO>>builder()
+                        .code(1000)
+                        .message("Search friends with keyword: " + name + " successfully!")
+                        .result(friends)
+                        .build();
+        }
+
         @GetMapping("/search-ids")
         public ResponseEntity<List<String>> searchUserIds(
                         @RequestParam String name, 

@@ -11,7 +11,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -52,8 +54,9 @@ public class Message {
 
     // ManyToOne with User
     private String senderId;
-    
-    private Set<String> receiverIds;
+
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
+    private List<MessageReceiver> receivers = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
@@ -80,6 +83,11 @@ public class Message {
     @OneToMany(mappedBy = "replyTo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Message> repliedMessages = new HashSet<>();
+
+
+    public void addReceiver(String receiverId) {
+        this.receivers.add(new MessageReceiver(this, receiverId));
+    }
 
     @PrePersist
     public void handleBeforeCreate() {

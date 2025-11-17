@@ -11,4 +11,6 @@ public interface FriendshipService {
     void deleteFriendShip(String iselfId, String otherId);
 
     Friendship editFriendShipStatus(String selfId, String otherId, FriendshipStatus status);
+
+    void unblockUser(String selfId, String otherId);
 }

@@ -23,6 +23,8 @@ public interface UserService {
     // Search users by name
     public Page<UserDTO> searchUsersByName(String userId, String name, int pageNum);
 
+    Page<UserDTO> searchFriendsByName(String userId, String name, int pageNum);
+
     // Search User ids by name
     public List<String> searchUserIds(String name, int pageNum);
 

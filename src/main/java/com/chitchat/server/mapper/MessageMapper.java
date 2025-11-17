@@ -2,9 +2,9 @@ package com.chitchat.server.mapper;
 
 import com.chitchat.server.dto.request.ChatRequest;
 import com.chitchat.server.dto.response.ChatResponse;
-import com.chitchat.server.entity.ChatMessage;
 import com.chitchat.server.entity.Media;
 import com.chitchat.server.entity.Message;
+import com.chitchat.server.entity.MessageReceiver;
 import com.chitchat.server.enums.MessageStatus;
 import com.chitchat.server.exception.AppException;
 import com.chitchat.server.exception.ErrorCode;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +33,9 @@ public class MessageMapper {
         message.setContent(request.getContent());
 
         message.setSenderId(userRepository.findByIdAndIsActiveTrue(request.getSenderId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)).getId());
-        message.setReceiverIds(request.getRecipientId());
+        for (String receiverId : request.getRecipientId()) {
+            message.addReceiver(receiverId);
+        }
         message.setConversation(conversationRepository.findById(request.getConversationId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)));
         message.setReactions(new HashSet<>());
         message.setTags(new HashSet<>());
@@ -43,26 +46,19 @@ public class MessageMapper {
         return message;
     }
 
-    public Message toMessage(ChatMessage request) {
-        Message message = new Message();
-        message.setContent(request.getContent());
-        message.setUrl(request.getUrl());
-        message.setConversation(conversationRepository.findById(request.getConversationId()).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_EXISTED)));
-        message.setSenderId(request.getSenderId());
-        message.setReceiverIds(request.getReceiverId());
-        message.setStatus(MessageStatus.DELIVERED);
-        message.setRead(false);
-
-        return message;
-    }
-
     public ChatResponse toResponse(Message message) {
         ChatResponse response = new ChatResponse();
         response.setId(message.getId());
         response.setContent(message.getContent());
         response.setConversationId(message.getConversation().getId());
         response.setSenderId(message.getSenderId());
-        response.setRecipientId(message.getReceiverIds());
+
+        Set<String> receiverIds = message.getReceivers()
+                .stream()
+                .map(MessageReceiver::getReceiverId)
+                .collect(Collectors.toSet());
+        response.setRecipientId(receiverIds);
+
         response.setIsRead(false);
         if(message.getReplyTo() != null) {
             Message reply = message.getReplyTo();

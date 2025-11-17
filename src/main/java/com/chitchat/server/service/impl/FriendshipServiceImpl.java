@@ -75,6 +75,7 @@ public class FriendshipServiceImpl implements FriendshipService {
             friendShipRepository.save(friendship);
         }
 
+        // Block user
         if(status == FriendshipStatus.Blocked) {
             Optional<Conversation> optionalConversation = conversationRepository.findDirectMessage(selfId, otherId);
             if(optionalConversation.isPresent()) {
@@ -86,21 +87,29 @@ public class FriendshipServiceImpl implements FriendshipService {
                 conversationRepository.save(conversation);
             }
         }
-        if (status == FriendshipStatus.Accepted && friendship.getStatus().equals(FriendshipStatus.Blocked))  {
-            log.info("unblock conversation");
-            Optional<Conversation> optionalConversation = conversationRepository.findDirectMessage(selfId, otherId);
-            if(optionalConversation.isPresent()) {
-                Conversation conversation = optionalConversation.get();
-
-                conversation.setBlockerId(null);
-                conversation.setBlocked(false);
-
-                conversationRepository.save(conversation);
-            }
-        }
 
         friendship.setStatus(status);
 
         return friendShipRepository.save(friendship);
+    }
+
+    @Transactional
+    public void unblockUser(String selfId, String otherId) {
+        Friendship friendship = friendShipRepository.findBy2UserIds(selfId, otherId);
+
+        log.info("unblock conversation");
+        Optional<Conversation> optionalConversation = conversationRepository.findDirectMessage(selfId, otherId);
+        if(optionalConversation.isPresent()) {
+            Conversation conversation = optionalConversation.get();
+
+            conversation.setBlockerId(null);
+            conversation.setBlocked(false);
+
+            conversationRepository.save(conversation);
+        }
+
+        if(friendship != null) {
+            friendShipRepository.delete(friendship);
+        }
     }
 }
